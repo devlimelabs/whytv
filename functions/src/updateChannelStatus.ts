@@ -64,13 +64,13 @@ export const updateChannelStatus = firestore.onDocumentUpdated(
 
       // Update channel status
       await channelRef.update({
-        status: 'videos_ready',
+        status: 'select_videos',
         queriesCompleted: allQueries.length,
         totalVideosFound: totalVideos,
         lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      logger.info('Channel status updated to videos_ready', {
+      logger.info('Channel status updated to select_videos', {
         channelId,
         totalQueries: allQueries.length,
         totalVideos,

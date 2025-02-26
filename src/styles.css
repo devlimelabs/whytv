@@ -1,2 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+/* Ensure PrimeNG toast is always on top */
+.p-toast {
+  z-index: 9999 !important;
+}
+
+.p-toast-container {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+.p-toast-message {
+  z-index: 9999 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}

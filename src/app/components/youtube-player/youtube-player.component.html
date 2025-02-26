@@ -20,70 +20,66 @@
   </div>
   }
 
-  <!-- Overlay Controls -->
+  <!-- Muted Indicator - Show when video is muted and playing -->
+  @if (isMuted() && isPlaying() && !isLoading() && playerReady()) {
+  <div
+    class="absolute top-8 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3 z-30"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-volume-x"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="23" x2="17" y1="9" y2="15" />
+      <line x1="17" x2="23" y1="9" y2="15" />
+    </svg>
+    <span class="text-base font-medium">Tap to unmute</span>
+  </div>
+  }
+
+  <!-- Play/Pause Button (completely separate from other controls) -->
+  <div
+    class="absolute inset-0 flex items-center justify-center transition-all z-20 duration-300"
+    [ngClass]="showPlayPauseButton() ? 'opacity-100' : 'opacity-0'"
+  >
+    <button
+      class="w-16 h-16 bg-black/30 rounded-full flex items-center justify-center transition-transform hover:scale-125 hover:bg-black/50 cursor-pointer"
+      (click)="$event.stopPropagation(); handlePlayPause()"
+      [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+    >
+      @if (isPlaying()) {
+      <lucide-icon [img]="Pause" class="w-8 h-8 text-white" />
+      } @else {
+      <lucide-icon [img]="Play" class="w-8 h-8 text-white" />
+      }
+    </button>
+  </div>
+
+  <!-- Side Controls (separate from play/pause button) -->
   <div
     class="absolute inset-0 transition-opacity duration-300"
     [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
   >
-    <!-- Play/Pause Button -->
-    <div class="absolute inset-0 flex items-center justify-center">
-      <button
-        class="w-16 h-16 bg-black/30 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform hover:scale-110"
-        (click)="$event.stopPropagation(); handlePlayPause()"
-        [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
-      >
-        @if (isPlaying()) {
-        <lucide-icon [img]="Pause" class="w-8 h-8 text-white" />
-        } @else {
-        <lucide-icon [img]="Play" class="w-8 h-8 text-white" />
-        }
-      </button>
-    </div>
-
-    <!-- Side Actions -->
-    <div
-      class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 translate-x transition-all duration-300"
-    >
-      <button
-        (click)="toggleLike($event)"
-        class="p-2 transition-transform hover:scale-125 cursor-pointer"
-        [attr.aria-label]="liked() ? 'Unlike' : 'Like'"
-        title="Like"
-      >
-        <lucide-icon
-          [img]="Heart"
-          class="w-8 h-8"
-          [ngClass]="liked() ? 'fill-red-500 text-red-500' : 'text-white'"
-        />
-      </button>
-      <button
-        class="p-2 transition-transform hover:scale-125 cursor-pointer"
-        aria-label="Comment"
-        title="Comment"
-      >
-        <lucide-icon [img]="MessageCircle" class="w-8 h-8 text-white" />
-      </button>
-      <button
-        class="p-2 transition-transform hover:scale-125 cursor-pointer"
-        aria-label="Share"
-        title="Share"
-      >
-        <lucide-icon [img]="Share2" class="w-8 h-8 text-white" />
-      </button>
-
-      <button
-        class="p-2 transition-transform hover:scale-125 cursor-pointer"
-        (click)="toggleMute($event)"
-        [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'"
-        title="Toggle Mute"
-      >
-        @if (isMuted()) {
-        <lucide-icon [img]="VolumeX" class="w-8 h-8 text-white" />
-        } @else {
-        <lucide-icon [img]="Volume2" class="w-8 h-8 text-white" />
-        }
-      </button>
-    </div>
+    <!-- Side Actions Component -->
+    <app-side-actions
+      [isMuted]="isMuted()"
+      [liked]="liked()"
+      [showControls]="showControls()"
+      (muteToggle)="toggleMute($event)"
+      (likeToggle)="toggleLike($event)"
+      (commentToggle)="handleComment($event)"
+      (shareToggle)="handleShare($event)"
+      (nextVideo)="handleNextVideo($event)"
+      (previousVideo)="handlePreviousVideo($event)"
+    />
 
     <!-- Video Info -->
     <div

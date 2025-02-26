@@ -1,31 +1,46 @@
-<div class="absolute top-0 right-0 m-4 z-10">
-  <div class="bg-black/40 backdrop-blur-lg rounded-lg p-2 shadow-lg">
-    <div class="flex flex-col overflow-y-auto max-h-[300px]">
-      @for (channel of channels(); track channel.id) {
-      <button
-        (click)="channelSelect.emit(channel)"
-        class="block w-full text-left px-4 py-2 rounded transition-colors"
-        [ngClass]="
-          channel.id === activeChannel().id
-            ? 'bg-white/10 text-white'
-            : 'text-white/70 hover:bg-white/5'
-        "
-        [attr.aria-label]="'Switch to ' + channel.name + ' channel'"
-      >
-        <p class="text-sm font-medium">{{ channel.name }}</p>
-        @if (channel.id === activeChannel().id) {
-        <p class="text-xs text-white/60 mt-1">{{ channel.description }}</p>
-        }
-      </button>
-      }
-    </div>
-
+<div
+  class="absolute top-0 left-0 m-4 z-30 group transition-opacity duration-300"
+  [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
+>
+  <div
+    class="bg-black/40 backdrop-blur-lg rounded-lg p-2 shadow-lg transition-all duration-1200 transform origin-bottom-left max-w-[250px]"
+  >
+    <!-- Create Channel Button (always at the top) -->
     <button
       (click)="openCreateChannelDialog()"
-      class="block w-full text-left px-4 py-2 rounded transition-colors text-white/80 hover:bg-white/5 cursor-pointer bg-black/20"
+      class="block w-full text-left px-4 py-2 rounded transition-colors text-white/80 hover:bg-white/5 cursor-pointer bg-black/20 mb-2"
       aria-label="Create a new channel"
     >
       <p class="text-sm text-center font-medium">Create Channel</p>
+    </button>
+
+    <!-- Other channels (hidden by default, shown on hover) -->
+    <div
+      class="overflow-hidden transition-all duration-1200 group-hover:max-h-[300px] max-h-0"
+    >
+      <div class="flex flex-col overflow-y-auto max-h-[300px]">
+        @for (channel of filteredChannels(); track channel.id) {
+        <button
+          (click)="channelSelect.emit(channel)"
+          class="block w-full text-left px-4 py-2 rounded transition-colors text-white/70 hover:bg-white/5 cursor-pointer"
+          [attr.aria-label]="'Switch to ' + channel.name + ' channel'"
+        >
+          <p class="text-sm font-medium truncate">{{ channel.name }}</p>
+        </button>
+        }
+      </div>
+    </div>
+
+    <!-- Always show active channel (outside the collapsible container) -->
+    <button
+      (click)="channelSelect.emit(activeChannel())"
+      class="block w-full text-left px-4 py-2 rounded transition-colors bg-white/10 text-white mt-2"
+      [attr.aria-label]="'Current channel: ' + activeChannel().name"
+    >
+      <p class="text-sm font-medium truncate">{{ activeChannel().name }}</p>
+      <p class="text-xs text-white/60 mt-1 line-clamp-2">
+        {{ activeChannel().description }}
+      </p>
     </button>
   </div>
 </div>

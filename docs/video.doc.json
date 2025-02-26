@@ -1,0 +1,29 @@
+{
+  "channelTitle": "AWE me",
+  "deleted": false,
+  "description": "What other EPIC stuff do you want to learn? ▻▻ Subscribe! http://brrk.co/AWEsub Who doesn't want to a master of stealth and ...",
+  "lastUpdated": {
+    "__time__": "2025-02-26T07:33:44.490Z"
+  },
+  "order": 7,
+  "publishedAt": "2015-11-20T18:00:21Z",
+  "thumbnails": {
+    "default": {
+      "height": 90,
+      "url": "https://i.ytimg.com/vi/-LL6NPUevGk/default.jpg",
+      "width": 120
+    },
+    "high": {
+      "height": 360,
+      "url": "https://i.ytimg.com/vi/-LL6NPUevGk/hqdefault.jpg",
+      "width": 480
+    },
+    "medium": {
+      "height": 180,
+      "url": "https://i.ytimg.com/vi/-LL6NPUevGk/mqdefault.jpg",
+      "width": 320
+    }
+  },
+  "title": "How To Be a Ninja - EPIC HOW TO",
+  "youtubeId": "-LL6NPUevGk"
+}

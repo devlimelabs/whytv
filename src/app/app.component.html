@@ -1,15 +1,26 @@
 <div class="relative h-screen w-full overflow-hidden bg-black">
-  <!-- Regular Video Player -->
-  @if (!currentChannel().videos[currentVideoIndex()].youtubeId) {
-  <app-video-player
-    [video]="currentChannel().videos[currentVideoIndex()]"
-    [isPlaying]="isPlaying()"
-    (playPause)="togglePlayPause()"
-  />
+  <!-- Logo in top right corner with fade-away behavior -->
+  <div
+    class="absolute -top-4 -right-2 z-[9999] transition-opacity duration-300"
+    [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
+  >
+    <img src="/whytv.ai-logo.png" alt="WhyTV Logo" class="h-48 w-auto" />
+  </div>
+
+  <!-- Loading Indicator - Only show when channels are loading -->
+  @if (isLoading()) {
+  <div
+    class="absolute inset-0 flex items-center justify-center bg-black/50 z-[9999]"
+  >
+    <div
+      class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
+    ></div>
+  </div>
   }
 
   <!-- YouTube Video Player -->
-  @if (currentChannel().videos[currentVideoIndex()].youtubeId) {
+  @if (!isLoading() && currentChannel().videos.length > 0 &&
+  currentChannel().videos[currentVideoIndex()].youtubeId) {
   <app-youtube-player
     [videoId]="currentChannel().videos[currentVideoIndex()].youtubeId!"
     [isPlaying]="isPlaying()"
@@ -17,7 +28,22 @@
     (playPause)="togglePlayPause()"
     (videoEnded)="handleVideoEnded()"
     (videoError)="handleVideoError($event)"
+    (nextVideo)="handleNextVideo()"
+    (previousVideo)="handlePreviousVideo()"
+    (controlsVisibilityChange)="handleControlsVisibilityChange($event)"
+    class="h-full"
   />
+  } @else if (!isLoading()) {
+  <!-- No videos message -->
+  <div
+    class="absolute inset-0 flex flex-col items-center justify-center bg-black text-white"
+  >
+    <div class="text-2xl font-bold mb-2">No Videos Available</div>
+    <div class="text-lg text-gray-400">
+      @if (currentChannel().videos.length === 0) { This channel doesn't have any
+      videos yet. } @else { No playable videos found in this channel. }
+    </div>
+  </div>
   }
 
   <!-- <app-channel-rail
@@ -26,11 +52,15 @@
     (channelSelect)="handleChannelSelect($event)"
   /> -->
 
+  <!-- Channel Picker - Only show when not loading -->
+  @if (!isLoading()) {
   <app-channel-picker
-    [channels]="mockChannels"
+    [channels]="channels()"
     [activeChannel]="currentChannel()"
     (channelSelect)="handleChannelSelect($event)"
   />
+  }
 </div>
 
-<p-toast />
+<!-- Toast moved outside the main container to ensure it's not affected by relative positioning -->
+<p-toast position="top-left" [baseZIndex]="9999" />

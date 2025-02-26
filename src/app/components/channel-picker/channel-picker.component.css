@@ -8,5 +8,52 @@ button:hover {
 .transition-colors {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-duration: 500ms;
+}
+
+/* Channel picker hover animations */
+.group:hover .group-hover\:max-h-\[300px\] {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  margin-bottom: 8px;
+  /* Much slower expansion */
+  transition-duration: 1500ms !important;
+}
+
+/* Ensure the container has a nice transition */
+.group > div {
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure proper overflow handling */
+.max-h-0 {
+  overflow: hidden;
+  margin-bottom: 0;
+  /* Collapse animation duration */
+  transition-duration: 1200ms;
+}
+
+/* Slower animation for expanding/collapsing */
+.duration-1200 {
+  transition-duration: 1200ms;
+}
+
+/* Ensure smooth height transition */
+.overflow-hidden {
+  transition-property: max-height, margin, transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 1200ms;
+}
+
+/* Different timing functions for expand vs collapse */
+.group:hover .overflow-hidden {
+  /* Very slow easing for expansion */
+  transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1);
+  transition-duration: 1500ms !important;
+}
+
+/* Add a slight delay to the expansion */
+.group:hover .group-hover\:max-h-\[300px\] {
+  transition-delay: 0.1s;
+  transition-duration: 1500ms !important;
 }

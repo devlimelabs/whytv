@@ -106,14 +106,12 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
   async (event) => {
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    const channelRef = event.data?.after.ref;
 
     // Validate inputs
-    if (!beforeData || !afterData || !channelRef) {
+    if (!beforeData || !afterData ) {
       logger.error('Missing channel reference or data', {
         beforeDataExists: !!beforeData,
         afterDataExists: !!afterData,
-        channelRefExists: !!channelRef,
       });
       return null;
     }
@@ -133,62 +131,11 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
       return null;
     }
 
+    const channelRef = admin.firestore().collection('channels').doc(event.params.channelId);
+
     try {
-      // Get the channel data
+      // Get the channel data & ref
       const channelData = afterData;
-
-      // Get the query ID from the channel data or use the most recent query
-      const queryId = channelData.activeQueryId || channelData.lastQueryId;
-
-      if (!queryId) {
-        logger.error('No active or last query ID found in channel data', {
-          channelId: event.params.channelId,
-        });
-
-        // Update channel status to error
-        await channelRef.update({
-          status: 'error',
-          error: 'No active or last query ID found',
-        });
-
-        return null;
-      }
-
-      // Get the query reference
-      const queryRef = channelRef.collection('queries').doc(queryId);
-      const querySnapshot = await queryRef.get();
-
-      if (!querySnapshot.exists) {
-        logger.error('Query not found', {
-          channelId: event.params.channelId,
-          queryId: queryId,
-        });
-
-        // Update channel status to error
-        await channelRef.update({
-          status: 'error',
-          error: `Query ${queryId} not found`,
-        });
-
-        return null;
-      }
-
-      const queryData = querySnapshot.data();
-
-      if (!queryData) {
-        logger.error('Query data not found', {
-          channelId: event.params.channelId,
-          queryId: queryId,
-        });
-
-        // Update channel status to error
-        await channelRef.update({
-          status: 'error',
-          error: `Query ${queryId} data not found`,
-        });
-
-        return null;
-      }
 
       // Fetch current channel videos
       const currentVideosSnapshot = await channelRef.collection('videos').get();
@@ -199,7 +146,6 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
 
       logger.info('Preparing video selection', {
         channelId: event.params.channelId,
-        queryId: queryId,
         currentVideosCount: currentVideos.length,
       });
 
@@ -240,7 +186,6 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
 
       logger.info('Video status updates completed', {
         channelId: event.params.channelId,
-        queryId: queryId,
         selectedVideoIdsCount: selectedVideoIds.length,
         totalVideosCount: currentVideos.length,
         deletedVideosCount: currentVideos.length - selectedVideoIds.length,
@@ -256,7 +201,6 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
 
       logger.info('Video selection process completed successfully', {
         channelId: event.params.channelId,
-        queryId: queryId,
         selectedVideosCount: selectedVideoIds.length,
         deletedVideosCount: currentVideos.length - selectedVideoIds.length,
       });

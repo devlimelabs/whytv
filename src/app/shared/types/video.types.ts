@@ -5,6 +5,7 @@ export interface Video {
   thumbnail: string;
   videoUrl: string;
   youtubeId?: string; // Optional YouTube video ID for YouTube videos
+  order?: number; // Optional order for sorting videos within a channel
 }
 
 export interface Channel {
