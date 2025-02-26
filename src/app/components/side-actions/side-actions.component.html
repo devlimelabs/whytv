@@ -1,0 +1,41 @@
+<div
+  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 translate-x transition-all duration-300"
+>
+  <button
+    (click)="toggleLike($event)"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    [attr.aria-label]="liked() ? 'Unlike' : 'Like'"
+    title="Like"
+  >
+    <lucide-icon
+      [img]="Heart"
+      class="w-8 h-8"
+      [ngClass]="liked() ? 'fill-red-500 text-red-500' : 'text-white'"
+    />
+  </button>
+  <button
+    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    aria-label="Comment"
+    title="Comment"
+  >
+    <lucide-icon [img]="MessageCircle" class="w-8 h-8 text-white" />
+  </button>
+  <button
+    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    aria-label="Share"
+    title="Share"
+  >
+    <lucide-icon [img]="Share2" class="w-8 h-8 text-white" />
+  </button>
+
+  <button
+    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    (click)="toggleMute($event)"
+  >
+    @if (isMuted()) {
+    <lucide-icon [img]="VolumeX" class="w-8 h-8 text-white" />
+    } @else {
+    <lucide-icon [img]="Volume2" class="w-8 h-8 text-white" />
+    }
+  </button>
+</div>

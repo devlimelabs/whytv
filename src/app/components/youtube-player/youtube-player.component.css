@@ -1,0 +1,32 @@
+/* Hide YouTube logo and related videos */
+:host ::ng-deep .ytp-chrome-top,
+:host ::ng-deep .ytp-chrome-bottom {
+  display: none !important;
+}
+
+/* Make sure the iframe takes up the full space */
+:host ::ng-deep iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:host {
+  display: block;
+  position: relative;
+}
+
+/* Custom animation for loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Styling for the like button when active */
+.fill-red-500 {
+  fill: #ef4444;
+}

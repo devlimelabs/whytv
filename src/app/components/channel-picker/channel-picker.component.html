@@ -1,0 +1,62 @@
+<div class="absolute top-0 right-0 m-4 z-10">
+  <div class="bg-black/40 backdrop-blur-lg rounded-lg p-2 shadow-lg">
+    <div class="flex flex-col overflow-y-auto max-h-[300px]">
+      @for (channel of channels(); track channel.id) {
+      <button
+        (click)="channelSelect.emit(channel)"
+        class="block w-full text-left px-4 py-2 rounded transition-colors"
+        [ngClass]="
+          channel.id === activeChannel().id
+            ? 'bg-white/10 text-white'
+            : 'text-white/70 hover:bg-white/5'
+        "
+        [attr.aria-label]="'Switch to ' + channel.name + ' channel'"
+      >
+        <p class="text-sm font-medium">{{ channel.name }}</p>
+        @if (channel.id === activeChannel().id) {
+        <p class="text-xs text-white/60 mt-1">{{ channel.description }}</p>
+        }
+      </button>
+      }
+    </div>
+
+    <button
+      (click)="openCreateChannelDialog()"
+      class="block w-full text-left px-4 py-2 rounded transition-colors text-white/80 hover:bg-white/5 cursor-pointer bg-black/20"
+      aria-label="Create a new channel"
+    >
+      <p class="text-sm text-center font-medium">Create Channel</p>
+    </button>
+  </div>
+</div>
+
+<p-dialog
+  header="Create Channel"
+  [modal]="true"
+  [(visible)]="visible"
+  [style]="{ width: '25rem' }"
+>
+  <div class="flex flex-col gap-4 mb-4">
+    <p-floatlabel variant="in">
+      <textarea
+        pTextarea
+        id="channelDescription"
+        class="flex-auto w-full"
+        autocomplete="off"
+        rows="5"
+        [(ngModel)]="channelDescription"
+        title="Channel Description"
+      ></textarea>
+      <label for="in_label">What would you like to watch?</label>
+    </p-floatlabel>
+  </div>
+
+  <div class="flex justify-end gap-4">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      (click)="cancelCreateChannel()"
+    />
+    <p-button label="Save" (click)="createChannel()" />
+  </div>
+</p-dialog>
