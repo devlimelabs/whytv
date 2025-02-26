@@ -1,3 +1,8 @@
 :host {
   display: block;
 }
+
+/* Styling for the like button when active */
+.fill-red-500 {
+  fill: #ef4444;
+}

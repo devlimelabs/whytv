@@ -126,14 +126,12 @@ export const finalizeChannelPlaylist = firestore.onDocumentUpdated('channels/{ch
   async (event) => {
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    const channelRef = event.data?.after.ref;
 
     // Validate inputs
-    if (!beforeData || !afterData || !channelRef) {
+    if (!beforeData || !afterData) {
       logger.error('Missing channel data or reference', {
         beforeDataExists: !!beforeData,
         afterDataExists: !!afterData,
-        channelRefExists: !!channelRef,
       });
       return null;
     }
@@ -147,8 +145,10 @@ export const finalizeChannelPlaylist = firestore.onDocumentUpdated('channels/{ch
       return null;
     }
 
+    const channelRef = admin.firestore().collection('channels').doc(event.params.channelId);
+
     try {
-      // Fetch channel data (we already have it in afterData, but keeping this for consistency)
+      // Fetch channel data & ref
       const channelData = afterData;
 
       // Fetch all channel videos
@@ -207,7 +207,7 @@ export const finalizeChannelPlaylist = firestore.onDocumentUpdated('channels/{ch
 
       // Update channel status
       await channelRef.update({
-        status: 'available',
+        status: 'live',
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
