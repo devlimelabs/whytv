@@ -1,0 +1,84 @@
+<div
+  class="fixed bottom-0 left-0 right-0 flex justify-center items-end transition-all duration-300"
+  [ngClass]="
+    isVisible() ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+  "
+>
+  <div class="bg-black/40 backdrop-blur-md rounded-t-2xl p-4 mb-2 shadow-lg">
+    <div class="flex gap-4">
+      @for (channel of channels(); track channel.id) {
+      <button
+        (click)="channelSelect.emit(channel)"
+        [class]="
+          'group relative transition-all duration-300 ' +
+          (channel.id === activeChannel().id
+            ? 'scale-110 -translate-y-2'
+            : 'hover:scale-105 hover:-translate-y-1')
+        "
+        [attr.aria-label]="'Switch to ' + channel.name + ' channel'"
+      >
+        <!-- Retro TV Frame -->
+        <div
+          [class]="
+            'w-20 h-20 relative ' +
+            (channel.id === activeChannel().id
+              ? 'bg-white/20'
+              : 'bg-black/40') +
+            ' rounded-lg p-2 backdrop-blur-sm shadow-lg'
+          "
+        >
+          <!-- TV Antenna -->
+          <div
+            class="absolute -top-4 left-1/2 -translate-x-1/2 w-[2px] h-5 origin-bottom -translate-x-[3px] rotate-[-30deg]"
+            [class]="
+              channel.id === activeChannel().id ? 'bg-white/20' : 'bg-black/40'
+            "
+          ></div>
+          <div
+            class="absolute -top-4 left-1/2 -translate-x-1/2 w-[2px] h-5 origin-bottom translate-x-[3px] rotate-[30deg]"
+            [class]="
+              channel.id === activeChannel().id ? 'bg-white/20' : 'bg-black/40'
+            "
+          ></div>
+
+          <!-- TV Screen -->
+          <div
+            class="w-full h-full rounded bg-black/60 flex items-center justify-center overflow-hidden"
+          >
+            @if (channel.videos[0]?.thumbnail) {
+            <img
+              [src]="channel.videos[0].thumbnail"
+              [alt]="channel.name"
+              class="w-full h-full object-cover"
+            />
+            } @else {
+            <lucide-icon name="Tv" class="w-6 h-6 text-white/60" />
+            }
+          </div>
+
+          <!-- TV Controls -->
+          <div class="absolute bottom-1 right-1 flex gap-1">
+            <div class="w-1 h-1 rounded-full bg-white/60"></div>
+            <div class="w-1 h-1 rounded-full bg-white/60"></div>
+          </div>
+        </div>
+
+        <!-- Channel Name -->
+        <div
+          [class]="
+            'absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm transition-opacity duration-300 ' +
+            (channel.id === activeChannel().id ? 'text-white' : 'text-white/60')
+          "
+        >
+          {{ channel.name }}
+        </div>
+
+        <!-- Reflection -->
+        <div
+          class="absolute top-full left-0 right-0 h-4 bg-gradient-to-b from-white/20 to-transparent rounded-b-lg opacity-50"
+        ></div>
+      </button>
+      }
+    </div>
+  </div>
+</div>

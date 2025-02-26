@@ -1,0 +1,14 @@
+We are using Angular (w/ tailwindcss v4) for the frontend & Firebase for all backend
+
+- Write clean maintainable code
+- Use lodash over native array and object methods
+
+- Always use standalone components
+- Never use Angular Modules
+- Always use static routes files.
+- Always lazy-load components and routes files that are not the first one loaded for a page
+- Always separate html, css, and ts into individual files
+- Always use OnPush ChangeDetection
+- Always use signals, and signal based functions input(), output()
+
+

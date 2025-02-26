@@ -1,0 +1,104 @@
+<div class="relative w-full h-full bg-black" (click)="handleTap($event)">
+  <!-- YouTube Player Container -->
+  <div id="youtube-player" class="w-full h-full"></div>
+
+  <!-- Loading Indicator -->
+  @if (isLoading()) {
+  <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+    <div
+      class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
+    ></div>
+  </div>
+  }
+
+  <!-- Error Message -->
+  @if (error()) {
+  <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+    <div class="bg-red-500/90 text-white px-4 py-2 rounded-lg shadow-lg">
+      {{ error() }}
+    </div>
+  </div>
+  }
+
+  <!-- Overlay Controls -->
+  <div
+    class="absolute inset-0 transition-opacity duration-300"
+    [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
+  >
+    <!-- Play/Pause Button -->
+    <div class="absolute inset-0 flex items-center justify-center">
+      <button
+        class="w-16 h-16 bg-black/30 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform hover:scale-110"
+        (click)="$event.stopPropagation(); handlePlayPause()"
+        [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+      >
+        @if (isPlaying()) {
+        <lucide-icon [img]="Pause" class="w-8 h-8 text-white" />
+        } @else {
+        <lucide-icon [img]="Play" class="w-8 h-8 text-white" />
+        }
+      </button>
+    </div>
+
+    <!-- Side Actions -->
+    <div
+      class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 translate-x transition-all duration-300"
+    >
+      <button
+        (click)="toggleLike($event)"
+        class="p-2 transition-transform hover:scale-125 cursor-pointer"
+        [attr.aria-label]="liked() ? 'Unlike' : 'Like'"
+        title="Like"
+      >
+        <lucide-icon
+          [img]="Heart"
+          class="w-8 h-8"
+          [ngClass]="liked() ? 'fill-red-500 text-red-500' : 'text-white'"
+        />
+      </button>
+      <button
+        class="p-2 transition-transform hover:scale-125 cursor-pointer"
+        aria-label="Comment"
+        title="Comment"
+      >
+        <lucide-icon [img]="MessageCircle" class="w-8 h-8 text-white" />
+      </button>
+      <button
+        class="p-2 transition-transform hover:scale-125 cursor-pointer"
+        aria-label="Share"
+        title="Share"
+      >
+        <lucide-icon [img]="Share2" class="w-8 h-8 text-white" />
+      </button>
+
+      <button
+        class="p-2 transition-transform hover:scale-125 cursor-pointer"
+        (click)="toggleMute($event)"
+        [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'"
+        title="Toggle Mute"
+      >
+        @if (isMuted()) {
+        <lucide-icon [img]="VolumeX" class="w-8 h-8 text-white" />
+        } @else {
+        <lucide-icon [img]="Volume2" class="w-8 h-8 text-white" />
+        }
+      </button>
+    </div>
+
+    <!-- Video Info -->
+    <div
+      class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
+    >
+      <h2 class="text-white text-xl font-medium">{{ video().title }}</h2>
+      <p class="text-white/80 text-sm">{{ video().channelName }}</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+      <div
+        class="h-full bg-white transition-all duration-300"
+        [style.width.%]="progress()"
+      ></div>
+    </div>
+  </div>
+</div>
