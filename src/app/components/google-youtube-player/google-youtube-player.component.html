@@ -1,6 +1,29 @@
 <div class="relative w-full h-full bg-black" (click)="handleTap($event)">
   <!-- YouTube Player Container -->
-  <div id="youtube-player" class="w-full h-full"></div>
+  @if (videoId() && videoId().length > 0) {
+  <youtube-player
+    #youtubePlayer
+    [videoId]="videoId()"
+    [height]="height()"
+    [width]="width()"
+    [playerVars]="{
+      autoplay: 1,
+      controls: 0,
+      disablekb: 0,
+      enablejsapi: 1,
+      mute: 1,
+      fs: 1,
+      modestbranding: 1,
+      rel: 0,
+      playsinline: 0,
+      iv_load_policy: 3
+    }"
+    (ready)="onPlayerReady($event)"
+    (stateChange)="onStateChange($event)"
+    (error)="onError($event)"
+    class="youtube-player w-full h-full"
+  ></youtube-player>
+  }
 
   <!-- Loading Indicator -->
   @if (isLoading()) {
@@ -21,7 +44,7 @@
   }
 
   <!-- Muted Indicator - Show when video is muted and playing -->
-  @if (isMuted() && isPlaying() && !isLoading() && playerReady()) {
+  @if (state.muted() && state.playing() && !isLoading() && playerReady()) {
   <div
     class="absolute top-8 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-5 py-3 rounded-lg shadow-lg flex items-center gap-3 z-30"
   >
@@ -52,10 +75,10 @@
   >
     <button
       class="w-16 h-16 bg-black/30 rounded-full flex items-center justify-center transition-transform hover:scale-125 hover:bg-black/50 cursor-pointer"
-      (click)="$event.stopPropagation(); handlePlayPause()"
-      [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+      (click)="togglePlayPause()"
+      [attr.aria-label]="state.playPauseLabel()"
     >
-      @if (isPlaying()) {
+      @if (state.playing()) {
       <lucide-icon [img]="Pause" class="w-8 h-8 text-white" />
       } @else {
       <lucide-icon [img]="Play" class="w-8 h-8 text-white" />
@@ -73,12 +96,12 @@
       [isMuted]="isMuted()"
       [liked]="liked()"
       [showControls]="showControls()"
-      (muteToggle)="toggleMute($event)"
-      (likeToggle)="toggleLike($event)"
-      (commentToggle)="handleComment($event)"
-      (shareToggle)="handleShare($event)"
-      (nextVideo)="handleNextVideo($event)"
-      (previousVideo)="handlePreviousVideo($event)"
+      (muteToggle)="toggleMute()"
+      (likeToggle)="toggleLike()"
+      (commentToggle)="handleComment()"
+      (shareToggle)="handleShare()"
+      (nextVideo)="handleNextVideo()"
+      (previousVideo)="handlePreviousVideo()"
     />
 
     <!-- Video Info -->
@@ -86,7 +109,7 @@
       class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
     >
       <h2 class="text-white text-xl font-medium">{{ video().title }}</h2>
-      <p class="text-white/80 text-sm">{{ video().channelName }}</p>
+      <p class="text-white/80 text-sm">{{ video().channelTitle }}</p>
     </div>
 
     <!-- Progress Bar -->

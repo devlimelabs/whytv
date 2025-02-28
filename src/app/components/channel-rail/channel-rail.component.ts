@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideAngularModule, Tv } from 'lucide-angular';
 import { fromEvent } from 'rxjs';
 
-import { Channel } from '../../shared/types/video.types';
+import { Channel } from '../../states/video-player.state';
 
 @Component({
   selector: 'app-channel-rail',

@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, OnInit, effect, inject, signal } from '@angular/core';
-import { ToastModule } from 'primeng/toast';
+import { ChangeDetectionStrategy, Component, effect, HostListener, inject, OnInit, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 import { ChannelPickerComponent } from './components/channel-picker/channel-picker.component';
-import { YoutubePlayerComponent } from './components/youtube-player/youtube-player.component';
-import { Channel, mockChannels } from './shared/types/video.types';
+import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
 import { FirestoreService } from './services/firestore.service';
+import { Channel, videoPlayerState } from './states/video-player.state';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +17,7 @@ import { FirestoreService } from './services/firestore.service';
     CommonModule,
     ChannelPickerComponent,
     ToastModule,
-    YoutubePlayerComponent
+    GoogleYoutubePlayerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MessageService]
@@ -34,14 +34,59 @@ export class AppComponent implements OnInit {
 
   // Inject the FirestoreService
   private firestoreService = inject(FirestoreService);
+  private state = inject(videoPlayerState);
+
+  // Mock channels for fallback
+  private mockChannels: Channel[] = [
+    {
+      id: 'channel1',
+      name: 'Music Videos',
+      description: 'Popular music videos',
+      videos: [
+        {
+          title: 'Rick Astley - Never Gonna Give You Up',
+          description: 'Official music video for Rick Astley - Never Gonna Give You Up',
+          channelTitle: 'Rick Astley',
+          publishedAt: '2009-10-25T06:57:33Z',
+          youtubeId: 'dQw4w9WgXcQ',
+          deleted: false,
+          order: 1,
+          thumbnails: {
+            default: { url: 'https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg', width: 120, height: 90 },
+            medium: { url: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg', width: 320, height: 180 },
+            high: { url: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', width: 480, height: 360 }
+          },
+          lastUpdated: { "__time__": new Date().toISOString() }
+        },
+        {
+          title: 'a-ha - Take On Me (Official Video)',
+          description: 'Official music video for a-ha - Take On Me',
+          channelTitle: 'a-ha',
+          publishedAt: '2010-02-17T08:32:51Z',
+          youtubeId: 'djV11Xbc914',
+          deleted: false,
+          order: 2,
+          thumbnails: {
+            default: { url: 'https://img.youtube.com/vi/djV11Xbc914/default.jpg', width: 120, height: 90 },
+            medium: { url: 'https://img.youtube.com/vi/djV11Xbc914/mqdefault.jpg', width: 320, height: 180 },
+            high: { url: 'https://img.youtube.com/vi/djV11Xbc914/hqdefault.jpg', width: 480, height: 360 }
+          },
+          lastUpdated: { "__time__": new Date().toISOString() }
+        }
+      ]
+    }
+  ];
 
   // Signals for state management
   channels = signal<Channel[]>([]);
-  currentChannel = signal<Channel>(mockChannels[0]); // Default to first mock channel until data loads
+  currentChannel = signal<Channel>(this.mockChannels[0]); // Default to first mock channel until data loads
   currentVideoIndex = signal<number>(0);
   isPlaying = signal<boolean>(true);
   isLoading = signal<boolean>(true);
   showControls = signal<boolean>(true);
+
+  // Toggle for new player
+  useNewPlayer = signal<boolean>(false);
 
   // Touch handling for swipe gestures
   touchStart = signal<{ x: number; y: number } | null>(null);
@@ -71,7 +116,7 @@ export class AppComponent implements OnInit {
           life: 3000
         });
         // Keep using mock data if no channels found
-        this.channels.set(mockChannels);
+        this.channels.set(this.mockChannels);
         this.isLoading.set(false);
       }
     } catch (error) {
@@ -83,7 +128,7 @@ export class AppComponent implements OnInit {
         life: 5000
       });
       // Use mock data on error
-      this.channels.set(mockChannels);
+      this.channels.set(this.mockChannels);
       this.isLoading.set(false);
     }
   }
@@ -211,5 +256,18 @@ export class AppComponent implements OnInit {
   // Handle controls visibility change from the YouTube player
   handleControlsVisibilityChange(isVisible: boolean): void {
     this.showControls.set(isVisible);
+  }
+
+  /**
+   * Toggle between old and new player implementations
+   */
+  togglePlayerImplementation(): void {
+    this.useNewPlayer.set(!this.useNewPlayer());
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Player Switched',
+      detail: `Now using ${this.useNewPlayer() ? 'new Google' : 'custom'} YouTube player`,
+      life: 3000
+    });
   }
 }

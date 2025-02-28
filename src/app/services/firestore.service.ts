@@ -1,16 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  Firestore,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where
-} from '@angular/fire/firestore';
-import { Channel, Video } from '../shared/types/video.types';
+import { collection, doc, Firestore, getDoc, getDocs, query, where } from '@angular/fire/firestore';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
+
+import { Channel, Video } from '../states/video-player.state';
 
 @Injectable({
   providedIn: 'root'
@@ -97,13 +90,31 @@ export class FirestoreService {
       if (videoData.deleted || !videoData.youtubeId) return;
 
       const video: Video = {
-        id: videoDoc.id,
-        title: videoData.title,
-        channelName: videoData.channelTitle || '',
-        thumbnail: get(videoData, 'thumbnails.high.url') || get(videoData, 'thumbnails.medium.url') || get(videoData, 'thumbnails.default.url') || '',
-        videoUrl: '',
+        title: videoData.title || 'Untitled Video',
+        description: videoData.description || '',
+        channelTitle: videoData.channelTitle || '',
+        publishedAt: videoData.publishedAt || new Date().toISOString(),
         youtubeId: videoData.youtubeId,
-        order: videoData.order || 999
+        deleted: videoData.deleted || false,
+        order: videoData.order || 999,
+        thumbnails: {
+          default: {
+            url: get(videoData, 'thumbnails.default.url', ''),
+            width: get(videoData, 'thumbnails.default.width', 120),
+            height: get(videoData, 'thumbnails.default.height', 90)
+          },
+          medium: {
+            url: get(videoData, 'thumbnails.medium.url', ''),
+            width: get(videoData, 'thumbnails.medium.width', 320),
+            height: get(videoData, 'thumbnails.medium.height', 180)
+          },
+          high: {
+            url: get(videoData, 'thumbnails.high.url', ''),
+            width: get(videoData, 'thumbnails.high.width', 480),
+            height: get(videoData, 'thumbnails.high.height', 360)
+          }
+        },
+        lastUpdated: videoData.lastUpdated || { "__time__": new Date().toISOString() }
       };
 
       videos.push(video);

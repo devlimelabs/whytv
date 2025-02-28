@@ -2,6 +2,22 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.6.
 
+## Project Technologies
+
+### Frontend
+- Angular 19 
+- TailwindCSS v4
+- PrimeNG 19 (UI Library)
+- Angular Youtube Video Player Component
+
+### Backend
+> Backend is all Firebase
+- Firestore for all data
+- Firebase Functions for serverless functions
+  - Genkit ai for ai flows in functions
+
+
+
 ## Development server
 
 To start a local development server, run:
@@ -54,6 +70,3 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
