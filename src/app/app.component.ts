@@ -14,6 +14,7 @@ import { activeChannelStore } from './states/active-channel.state';
 import { Channel, videoPlayerState } from './states/video-player.state';
 import { ChannelService } from './services/channel/channel.service';
 import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -29,6 +30,7 @@ import { FormsModule } from '@angular/forms';
     ChannelCarouselComponent,
     VideoCarouselComponent,
     DialogModule,
+    ButtonModule,
     FormsModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -179,43 +181,25 @@ export class AppComponent implements OnInit {
 
     if (!start || !end) return;
 
-    const verticalDistance = start.y - end.y;
     const horizontalDistance = start.x - end.x;
-
-    // Determine if the swipe is primarily horizontal or vertical
-    const isHorizontalSwipe = Math.abs(horizontalDistance) > Math.abs(verticalDistance);
 
     const channels = this.channelsState.channels();
     const currentChannel = this.channelsState.currentChannel();
     
     if (!currentChannel || channels.length === 0) return;
 
-    if (isHorizontalSwipe) {
-      // Horizontal swipe for channel switching
-      const isSwipeLeft = horizontalDistance > 50;
-      const isSwipeRight = horizontalDistance < -50;
+    // Horizontal swipe for channel switching only
+    const isSwipeLeft = horizontalDistance > 50;
+    const isSwipeRight = horizontalDistance < -50;
 
-      const currentChannelIndex = channels.findIndex(c => c.id === currentChannel.id);
+    const currentChannelIndex = channels.findIndex(c => c.id === currentChannel.id);
 
-      if (isSwipeLeft && currentChannelIndex < channels.length - 1) {
-        this.handleChannelSelect(channels[currentChannelIndex + 1]);
-      }
+    if (isSwipeLeft && currentChannelIndex < channels.length - 1) {
+      this.handleChannelSelect(channels[currentChannelIndex + 1]);
+    }
 
-      if (isSwipeRight && currentChannelIndex > 0) {
-        this.handleChannelSelect(channels[currentChannelIndex - 1]);
-      }
-    } else {
-      // Vertical swipe for video navigation within channel
-      const isSwipeUp = verticalDistance > 50;
-      const isSwipeDown = verticalDistance < -50;
-
-      if (isSwipeUp && this.activeChannelState.hasNextVideo()) {
-        this.handleNextVideo();
-      }
-
-      if (isSwipeDown && this.activeChannelState.hasPreviousVideo()) {
-        this.handlePreviousVideo();
-      }
+    if (isSwipeRight && currentChannelIndex > 0) {
+      this.handleChannelSelect(channels[currentChannelIndex - 1]);
     }
 
     this.touchStart.set(null);

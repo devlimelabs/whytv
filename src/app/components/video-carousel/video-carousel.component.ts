@@ -71,10 +71,8 @@ export class VideoCarouselComponent {
     return this.currentVideoIndex === index;
   }
   
-  // Handle close button click
-  close() {
-    this.toggleVisibility.emit();
-  }
+  // We now use side actions to toggle visibility
+  // The close method is removed as we want to control this only through side actions
   
   // Format duration for display
   formatDuration(seconds: number): string {

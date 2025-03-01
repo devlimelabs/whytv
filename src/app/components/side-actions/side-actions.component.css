@@ -7,6 +7,17 @@
   fill: #ef4444;
 }
 
+/* Glass effect for the container when part of the video carousel */
+.translate-x-\[-280px\] {
+  padding: 1rem 0.5rem;
+  border-radius: 12px 0 0 12px;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.4);
+  /* Make the buttons pop a bit more */
+  padding-right: 0.2rem;
+}
+
 .neon-button {
   position: relative;
   border-radius: 50%;
