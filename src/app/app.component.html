@@ -8,7 +8,7 @@
   </div>
 
   <!-- Loading Indicator - Only show when channels are loading -->
-  @if (isLoading()) {
+  @if (channelsState.isLoading()) {
   <div
     class="absolute inset-0 flex items-center justify-center bg-black/50 z-[9999]"
   >
@@ -19,21 +19,19 @@
   }
 
   <!-- YouTube Video Player -->
-  @if (!isLoading() && currentChannel().videos.length > 0) {
+  @if (!channelsState.isLoading() && activeChannelState.activeChannel()?.videos && activeChannelState.activeChannel()?.videos?.length! > 0) {
   <!-- Google YouTube Player -->
   <app-google-youtube-player
-    [videoId]="currentChannel().videos[currentVideoIndex()].youtubeId"
-    [isPlaying]="isPlaying()"
-    [video]="currentChannel().videos[currentVideoIndex()]"
-    (playPause)="togglePlayPause()"
+    [videoId]="activeChannelState.activeVideoId()"
     (videoEnded)="handleVideoEnded()"
     (videoError)="handleVideoError($event)"
     (nextVideo)="handleNextVideo()"
     (previousVideo)="handlePreviousVideo()"
     (controlsVisibilityChange)="handleControlsVisibilityChange($event)"
-    class="h-full"
+    (handleCreateChannel)="handleCreateChannel()"
+    class="w-full h-full"
   />
-  } @if (!isLoading() && currentChannel().videos.length === 0) {
+  } @if (!channelsState.isLoading() && (!activeChannelState.activeChannel()?.videos || activeChannelState.activeChannel()?.videos?.length! === 0)) {
   <!-- No videos message -->
   <div
     class="absolute inset-0 flex flex-col items-center justify-center bg-black text-white"
@@ -45,19 +43,65 @@
   </div>
   }
 
-  <!-- <app-channel-rail
-    [channels]="mockChannels"
-    [activeChannel]="currentChannel()"
-    (channelSelect)="handleChannelSelect($event)"
-  /> -->
-
-  <!-- Channel Picker - Only show when not loading -->
-  @if (!isLoading()) {
-  <app-channel-picker
-    [channels]="channels()"
-    [activeChannel]="currentChannel()"
-    (channelSelect)="handleChannelSelect($event)"
-  />
+  <!-- Channel Picker removed in favor of side-actions button -->
+  
+  <!-- New Carousels - Only show when not loading -->
+  @if (!channelsState.isLoading()) {
+    <!-- Channel Carousel (Bottom) -->
+    <app-channel-carousel />
+    
+    <!-- Video Carousel (Right side) -->
+    <app-video-carousel />
+    
+    <!-- Create Channel Dialog -->
+    <p-dialog 
+      [visible]="createChannelVisible()" 
+      (visibleChange)="createChannelVisible.set($event)"
+      [modal]="true"
+      [resizable]="false"
+      [draggable]="false"
+      header="Create Channel"
+      styleClass="p-dialog-custom"
+      [style]="{width: '500px'}"
+      [baseZIndex]="10000"
+    >
+      <div class="p-fluid">
+        <div class="field mt-2">
+          <label for="description" class="mb-2 block">Channel Description</label>
+          <textarea 
+            id="description" 
+            rows="5" 
+            pInputTextarea 
+            class="w-full" 
+            placeholder="Describe what kind of videos you want in your channel..."
+            [ngModel]="channelDescription()"
+            (ngModelChange)="channelDescription.set($event)"
+          ></textarea>
+          <small class="text-gray-500">
+            Be descriptive about the content, theme, or mood you're looking for.
+          </small>
+        </div>
+      </div>
+      
+      <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+          <button 
+            pButton 
+            label="Cancel" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="cancelCreateChannel()"
+          ></button>
+          <button 
+            pButton 
+            label="Create" 
+            icon="pi pi-check" 
+            class="p-button-primary" 
+            (click)="createChannel()"
+          ></button>
+        </div>
+      </ng-template>
+    </p-dialog>
   }
 </div>
 

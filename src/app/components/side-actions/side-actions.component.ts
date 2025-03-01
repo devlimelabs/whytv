@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal, OnInit } from '@angular/core';
 import {
     Heart,
     LucideAngularModule,
@@ -8,7 +8,10 @@ import {
     Volume2,
     VolumeX,
     ChevronUp,
-    ChevronDown
+    ChevronDown,
+    List,
+    X,
+    Plus
 } from 'lucide-angular';
 
 @Component({
@@ -19,7 +22,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true
 })
-export class SideActionsComponent {
+export class SideActionsComponent implements OnInit {
+  // Animation state for initial entrance
+  initialAnimation = signal(true);
   protected readonly Heart = Heart;
   protected readonly MessageCircle = MessageCircle;
   protected readonly Share2 = Share2;
@@ -27,11 +32,15 @@ export class SideActionsComponent {
   protected readonly VolumeX = VolumeX;
   protected readonly ChevronUp = ChevronUp;
   protected readonly ChevronDown = ChevronDown;
+  protected readonly List = List;
+  protected readonly X = X;
+  protected readonly Plus = Plus;
 
   // Inputs
   isMuted = input<boolean>(false);
   liked = input<boolean>(false);
   showControls = input<boolean>(true);
+  carouselVisible = input<boolean>(false);
 
   // Outputs
   likeToggle = output<MouseEvent>();
@@ -40,6 +49,8 @@ export class SideActionsComponent {
   shareToggle = output<MouseEvent>();
   nextVideo = output<MouseEvent>();
   previousVideo = output<MouseEvent>();
+  toggleCarousel = output<MouseEvent>();
+  createChannel = output<MouseEvent>();
 
   handleLikeToggle(event: MouseEvent) {
     event.stopPropagation();
@@ -69,5 +80,22 @@ export class SideActionsComponent {
   handlePreviousVideo(event: MouseEvent) {
     event.stopPropagation();
     this.previousVideo.emit(event);
+  }
+
+  handleToggleCarousel(event: MouseEvent) {
+    event.stopPropagation();
+    this.toggleCarousel.emit(event);
+  }
+  
+  handleCreateChannel(event: MouseEvent) {
+    event.stopPropagation();
+    this.createChannel.emit(event);
+  }
+  
+  ngOnInit(): void {
+    // Set initial animation state
+    setTimeout(() => {
+      this.initialAnimation.set(false);
+    }, 100);
   }
 }

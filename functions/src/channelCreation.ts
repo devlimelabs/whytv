@@ -1,4 +1,3 @@
-import * as functionsV2 from 'firebase-functions/v2';
 import {firestore} from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
@@ -61,6 +60,31 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
 
     const description = channelData.description;
 
+    // Validate that we have a description field to work with
+    if (!description || typeof description !== 'string' || description.trim() === '') {
+      logger.error('Missing or invalid description in channel document', {
+        channelId: event.params.channelId,
+        description,
+      });
+
+      // Delete invalid channel document to prevent empty documents
+      if (event.data) {
+        try {
+          await event.data.ref.delete();
+          logger.info('Deleted invalid channel document', {
+            channelId: event.params.channelId,
+          });
+        } catch (deleteError) {
+          logger.error('Failed to delete invalid channel document', {
+            channelId: event.params.channelId,
+            error: deleteError instanceof Error ? deleteError.message : 'Unknown error',
+          });
+        }
+      }
+
+      return null;
+    }
+
     logger.info('Starting channel creation process', {
       channelId: event.params.channelId,
       description,
@@ -69,6 +93,24 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
     try {
       // Generate channel name using AI
       const channelName = await generateChannelNameFlow(description);
+
+      // Validate channel name result
+      if (!channelName || typeof channelName !== 'string' || channelName.trim() === '') {
+        logger.error('Failed to generate valid channel name', {
+          channelId: event.params.channelId,
+          generatedName: channelName,
+        });
+
+        // Delete the channel document to prevent empty documents
+        if (event.data) {
+          await event.data.ref.delete();
+          logger.info('Deleted channel document due to name generation failure', {
+            channelId: event.params.channelId,
+          });
+        }
+
+        return null;
+      }
 
       // Increment channel number atomically
       const counterRef = admin.firestore().doc('counters/channels');
@@ -95,6 +137,7 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
             channelName,
             channelNumber: nextChannelNumber,
             status: 'new',
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
           });
 
           logger.info('Channel document updated successfully', {
@@ -102,6 +145,8 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
             channelNumber: nextChannelNumber,
             status: 'new',
           });
+        } else {
+          throw new Error('Event data reference is missing');
         }
 
         return {channelName, channelNumber: nextChannelNumber};
@@ -110,7 +155,24 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
       logger.error('Channel creation error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         description,
+        channelId: event.params.channelId,
       });
-      throw new functionsV2.https.HttpsError('internal', 'Failed to create channel');
+
+      // Delete the channel document to prevent orphaned documents
+      if (event.data) {
+        try {
+          await event.data.ref.delete();
+          logger.info('Deleted channel document due to creation error', {
+            channelId: event.params.channelId,
+          });
+        } catch (deleteError) {
+          logger.error('Failed to delete channel document after error', {
+            channelId: event.params.channelId,
+            error: deleteError instanceof Error ? deleteError.message : 'Unknown error',
+          });
+        }
+      }
+
+      throw new Error('Failed to create channel');
     }
   });

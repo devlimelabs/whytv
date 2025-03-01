@@ -25,3 +25,4 @@ export {processYouTubeQuery} from './processQueries';
 export {selectVideosForChannel} from './selectVideos';
 export {finalizeChannelPlaylist} from './finalizePlaylist';
 export {updateChannelStatus} from './updateChannelStatus';
+export {cleanupEmptyChannels} from './cleanupEmptyChannels';

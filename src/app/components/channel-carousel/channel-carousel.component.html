@@ -1,0 +1,34 @@
+<div 
+  class="channel-carousel-container"
+  [ngClass]="{'visible': visible(), 'hidden': !visible()}"
+>
+  <div class="toggle-btn" (click)="toggleVisibility()">
+    <div class="toggle-indicator"></div>
+  </div>
+  
+  <p-carousel 
+    [value]="channels" 
+    [numVisible]="5" 
+    [numScroll]="1" 
+    [circular]="true"
+    [responsiveOptions]="responsiveOptions"
+    [showNavigators]="true"
+    [showIndicators]="false"
+    styleClass="custom-carousel"
+  >
+    <ng-template let-channel pTemplate="item">
+      <div 
+        class="channel-item" 
+        [ngClass]="{'active': isCurrentChannel(channel)}"
+        (click)="selectChannel(channel)"
+        [style.background-image]="'url(' + (channel.videos[0]?.thumbnails?.medium?.url || '') + ')'"
+      >
+        <div class="overlay"></div>
+        <div class="channel-content">
+          <h3 class="channel-name">{{ channel.name }}</h3>
+          <p class="channel-video-count">{{ channel.videos.length }} videos</p>
+        </div>
+      </div>
+    </ng-template>
+  </p-carousel>
+</div>

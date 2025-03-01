@@ -1,0 +1,35 @@
+<div 
+  class="video-carousel-container"
+  [ngClass]="{'visible': visible(), 'hidden': !visible()}"
+>
+  
+  <p-carousel 
+    [value]="videos" 
+    [numVisible]="3" 
+    [numScroll]="1" 
+    [circular]="true"
+    orientation="vertical"
+    verticalViewPortHeight="70vh"
+    [responsiveOptions]="responsiveOptions"
+    [showNavigators]="false"
+    [showIndicators]="false"
+    styleClass="vertical-carousel"
+  >
+    <ng-template let-video let-i="index" pTemplate="item">
+      <div 
+        class="video-item" 
+        [ngClass]="{'active': isCurrentVideo(i)}"
+        (click)="selectVideo(i)"
+      >
+        <div class="video-thumbnail">
+          <img [src]="video.thumbnails.medium.url" [alt]="video.title">
+          <div class="video-index">{{ i + 1 }}</div>
+        </div>
+        <div class="video-content">
+          <h3 class="video-title">{{ video.title }}</h3>
+          <p class="video-channel">{{ video.channelTitle }}</p>
+        </div>
+      </div>
+    </ng-template>
+  </p-carousel>
+</div>

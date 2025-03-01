@@ -1,11 +1,12 @@
 <div
-  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 translate-x transition-all duration-300"
+  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 transition-all duration-500"
+  [ngClass]="{'translate-x-20': initialAnimation(), 'translate-x-0': !initialAnimation()}"
 >
   <button
     (click)="handleLikeToggle($event)"
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     [attr.aria-label]="liked() ? 'Unlike' : 'Like'"
-    title="Like"
+    [attr.data-tooltip]="liked() ? 'Unlike' : 'Like'"
   >
     <lucide-icon
       [img]="Heart"
@@ -13,51 +14,88 @@
       [ngClass]="liked() ? 'fill-red-500 text-red-500' : 'text-white'"
     />
   </button>
+  
   <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     aria-label="Comment"
-    title="Comment"
+    data-tooltip="Comment"
     (click)="handleCommentToggle($event)"
   >
     <lucide-icon [img]="MessageCircle" class="w-8 h-8 text-white" />
   </button>
+  
   <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     aria-label="Share"
-    title="Share"
+    data-tooltip="Share"
     (click)="handleShareToggle($event)"
   >
     <lucide-icon [img]="Share2" class="w-8 h-8 text-white" />
   </button>
 
   <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
+    [attr.aria-label]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
+    [attr.data-tooltip]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
+    (click)="handleToggleCarousel($event)"
+  >
+    @if (carouselVisible()) {
+      <lucide-icon [img]="X" class="w-8 h-8 text-white" />
+    } @else {
+      <lucide-icon [img]="List" class="w-8 h-8 text-white" />
+    }
+  </button>
+
+  <button
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     aria-label="Previous Video"
-    title="Previous Video"
+    data-tooltip="Previous Video"
     (click)="handlePreviousVideo($event)"
   >
     <lucide-icon [img]="ChevronUp" class="w-8 h-8 text-white" />
   </button>
 
   <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     aria-label="Next Video"
-    title="Next Video"
+    data-tooltip="Next Video"
     (click)="handleNextVideo($event)"
   >
     <lucide-icon [img]="ChevronDown" class="w-8 h-8 text-white" />
   </button>
 
   <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer"
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
     (click)="handleMuteToggle($event)"
     [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'"
-    title="Toggle Mute"
+    [attr.data-tooltip]="isMuted() ? 'Unmute' : 'Mute'"
   >
     @if (isMuted()) {
     <lucide-icon [img]="VolumeX" class="w-8 h-8 text-white" />
     } @else {
     <lucide-icon [img]="Volume2" class="w-8 h-8 text-white" />
     }
+  </button>
+</div>
+
+<!-- Create Channel Button - Now at the bottom with inverted styles -->
+<div class="absolute z-20 right-4 bottom-4">
+  <svg width="0" height="0">
+    <linearGradient id="neon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00fffc" />
+      <stop offset="50%" stop-color="#fc00ff" />
+      <stop offset="100%" stop-color="#fffc00" />
+    </linearGradient>
+  </svg>
+  <button
+    class="p-2 outline-neon-button cursor-pointer tooltip backdrop-blur-sm"
+    aria-label="Create New Channel"
+    data-tooltip="Create New Channel"
+    (click)="handleCreateChannel($event)"
+  >
+    <lucide-icon
+      [img]="Plus"
+      class="w-8 h-8 outline-neon-icon"
+    />
   </button>
 </div>
