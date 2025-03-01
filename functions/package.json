@@ -23,6 +23,7 @@
     "firebase-functions": "^6.3.1",
     "genkit": "^1.0.4",
     "genkitx-anthropic": "^0.17.0",
+    "genkitx-openai": "^0.17.0",
     "googleapis": "^144.0.0",
     "lodash": "^4.17.21"
   },
