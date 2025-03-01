@@ -5,7 +5,7 @@ import { LucideAngularModule, ChevronUp, ChevronDown, X } from 'lucide-angular';
 
 import { activeChannelStore } from '../../states/active-channel.state';
 import { channelsStore } from '../../states/channels.state';
-import { Video } from '../../states/video-player.state';
+import { Video, videoPlayerState } from '../../states/video-player.state';
 
 @Component({
   selector: 'app-video-carousel',
@@ -19,6 +19,7 @@ export class VideoCarouselComponent {
   // Inject the stores
   private activeChannelState = inject(activeChannelStore);
   private channelsState = inject(channelsStore);
+  protected playerState = inject(videoPlayerState);
   
   // Icons
   protected readonly ChevronUp = ChevronUp;

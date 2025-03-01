@@ -1,11 +1,20 @@
 <div
-  class="fixed bottom-0 left-0 right-0 flex justify-center items-end transition-all duration-300"
+  class="fixed bottom-0 left-0 right-[64px] flex justify-center items-end transition-all duration-300"
   [ngClass]="
-    isVisible() ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+    (isVisible() && !playerState.hideUIOverlays()) ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
   "
 >
-  <div class="bg-black/40 backdrop-blur-md rounded-t-2xl p-4 mb-2 shadow-lg">
-    <div class="flex gap-4">
+  <!-- Rail Handle - Always visible tab to reopen the rail -->
+  <div 
+    class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-t-xl cursor-pointer"
+    (click)="toggleVisibility()"
+    *ngIf="!isVisible()"
+  >
+    <div class="w-8 h-1 bg-white/50 rounded-full"></div>
+  </div>
+
+  <div class="bg-black/40 backdrop-blur-md rounded-t-2xl p-4 mb-2 shadow-lg w-full max-w-[1200px]">
+    <div class="flex gap-4 overflow-x-auto pb-2 justify-center sm:justify-start">
       @for (channel of channels(); track channel.id) {
       <button
         (click)="channelSelect.emit(channel)"

@@ -85,6 +85,28 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     this.windowHeight.set(window.innerHeight);
     this.windowWidth.set(window.innerWidth);
   }
+  
+  // Listen for mouse movement to show controls
+  @HostListener('window:mousemove')
+  onMouseMove() {
+    if (this.playerReady() && !this.showControls()) {
+      this.showVideoControls();
+    } else {
+      // Reset the timer even if controls are already visible
+      this.resetHideControlsTimer();
+    }
+  }
+  
+  // Listen for touch events to show controls on mobile
+  @HostListener('window:touchstart')
+  onTouchStart() {
+    if (this.playerReady() && !this.showControls()) {
+      this.showVideoControls();
+    } else {
+      // Reset the timer even if controls are already visible
+      this.resetHideControlsTimer();
+    }
+  }
 
   // Outputs
   videoEnded = output<void>();
@@ -93,6 +115,7 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   previousVideo = output<void>();
   controlsVisibilityChange = output<boolean>();
   handleCreateChannel = output<MouseEvent>();
+  toggleChannelRail = output<void>();
 
   // Signals
   showControls = signal(true);
@@ -165,6 +188,10 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
   toggleVideoCarousel(): void {
     this.carouselVisible.update(value => !value);
+  }
+  
+  handleToggleChannelRail(): void {
+    this.toggleChannelRail.emit();
   }
 
   ngAfterViewInit(): void {
@@ -501,14 +528,18 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   }
 
   /**
-   * Show video controls
+   * Show video controls and all UI overlays
    */
   showVideoControls(): void {
     this.isUserInteracting = true;
     this.showControls.set(true);
+    
+    // Update global state to show all UI elements
     patchState(this.state, {
-      showControls: true
+      showControls: true,
+      hideUIOverlays: false
     });
+    
     this.controlsVisibilityChange.emit(true);
 
     // Reset the hide controls timer
@@ -516,7 +547,7 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   }
 
   /**
-   * Hide video controls after a delay if not interacting
+   * Hide video controls and all UI overlays after a delay if not interacting
    */
   resetHideControlsTimer(): void {
     if (this.hideControlsTimer) {
@@ -525,10 +556,21 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
     this.hideControlsTimer = setTimeout(() => {
       if (!this.isUserInteracting && this.state.playing()) {
+        // Hide controls
         this.showControls.set(false);
+        
+        // Hide carousel if visible
+        if (this.carouselVisible()) {
+          this.carouselVisible.set(false);
+        }
+        
+        // Update global state to coordinate with other components
         patchState(this.state, {
-          showControls: false
+          showControls: false,
+          hideUIOverlays: true
         });
+        
+        // Notify parent about visibility change
         this.controlsVisibilityChange.emit(false);
       }
     }, 3000);

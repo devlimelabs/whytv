@@ -9,6 +9,7 @@ type VideoPlayerState = {
   muted: boolean;
   liked: boolean;
   showControls: boolean;
+  hideUIOverlays: boolean;  // New property to coordinate hiding all UI elements
   progress: number;
   loading: boolean;
   error: string | null;
@@ -27,6 +28,7 @@ export const videoPlayerState = signalStore(
     muted: false,
     liked: false,
     showControls: true,
+    hideUIOverlays: false,
     progress: 0,
     loading: false,
     error: null,
