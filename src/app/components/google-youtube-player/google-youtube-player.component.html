@@ -1,33 +1,50 @@
-<div class="relative w-full h-full bg-black" (click)="handleTap($event)">
-  <!-- YouTube Player Container -->
-  @if (videoId() && videoId().length > 0) {
-  <youtube-player
-    #youtubePlayer
-    [videoId]="videoId()"
-    [height]="height()"
-    [width]="width()"
-    [playerVars]="{
-      autoplay: 1,
-      controls: 0,
-      disablekb: 0,
-      enablejsapi: 1,
-      mute: 1,
-      fs: 1,
-      modestbranding: 1,
-      rel: 0,
-      playsinline: 0,
-      iv_load_policy: 3
-    }"
-    (ready)="onPlayerReady($event)"
-    (stateChange)="onStateChange($event)"
-    (error)="onError($event)"
-    class="youtube-player w-full h-full"
-  ></youtube-player>
+<div class="relative w-full h-full bg-black" (click)="handleTap($event)" [ngClass]="carouselVisible() ? 'carousel-visible' : 'carousel-hidden'">
+  <!-- Video Thumbnail - Shown before player is ready -->
+  @if (videoId() && videoId().length > 0 && !playerReady()) {
+  <div class="absolute inset-0 z-0 bg-black">
+    <img 
+      *ngIf="state.video()?.thumbnails?.high || state.video()?.thumbnails?.medium"
+      [src]="state.video()?.thumbnails?.high?.url || state.video()?.thumbnails?.medium?.url"
+      alt="Video thumbnail"
+      class="w-full h-full object-contain"
+    />
+  </div>
   }
+
+  <!-- YouTube Player Container - Absolute position to ensure always visible -->
+  <div class="absolute inset-0 z-5 youtube-container" style="pointer-events: auto; background: transparent; width: 100%; height: 100%; overflow: hidden;">
+    @if (videoId() && videoId().length > 0) {
+    <youtube-player
+      #youtubePlayer
+      [videoId]="videoId()"
+      [height]="windowHeight()"
+      [width]="windowWidth()"
+      [playerVars]="{
+        autoplay: 1,
+        controls: 0,
+        disablekb: 0,
+        enablejsapi: 1,
+        mute: 1,
+        fs: 1,
+        modestbranding: 1,
+        rel: 0,
+        playsinline: 1,
+        iv_load_policy: 3
+      }"
+      showBeforeIframeApiLoads
+      [loadApi]="true"
+      (ready)="onPlayerReady($event)"
+      (stateChange)="onStateChange($event)"
+      (error)="onError($event)"
+      class="youtube-player"
+      style="display: block; position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 10;"
+    ></youtube-player>
+    }
+  </div>
 
   <!-- Loading Indicator -->
   @if (isLoading()) {
-  <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+  <div class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
     <div
       class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
     ></div>
@@ -36,7 +53,7 @@
 
   <!-- Error Message -->
   @if (error()) {
-  <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+  <div class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
     <div class="bg-red-500/90 text-white px-4 py-2 rounded-lg shadow-lg">
       {{ error() }}
     </div>
@@ -89,34 +106,43 @@
   <!-- Side Controls (separate from play/pause button) -->
   <div
     class="absolute inset-0 transition-opacity duration-300"
-    [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
+    [ngClass]="state.showControls() ? 'opacity-100' : 'opacity-0'"
   >
     <!-- Side Actions Component -->
     <app-side-actions
-      [isMuted]="isMuted()"
-      [liked]="liked()"
-      [showControls]="showControls()"
+      [isMuted]="state.muted()"
+      [liked]="state.liked()"
+      [showControls]="state.showControls()"
+      [carouselVisible]="carouselVisible()"
       (muteToggle)="toggleMute()"
       (likeToggle)="toggleLike()"
       (commentToggle)="handleComment()"
       (shareToggle)="handleShare()"
       (nextVideo)="handleNextVideo()"
       (previousVideo)="handlePreviousVideo()"
+      (toggleCarousel)="toggleVideoCarousel()"
+      (createChannel)="handleCreateChannel.emit($event)"
     />
+
+    <!-- Video Carousel -->
+    <app-video-carousel 
+      [visible]="carouselVisible()"
+      (toggleVisibility)="toggleVideoCarousel()"
+    ></app-video-carousel>
 
     <!-- Video Info -->
     <div
       class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
     >
-      <h2 class="text-white text-xl font-medium">{{ video().title }}</h2>
-      <p class="text-white/80 text-sm">{{ video().channelTitle }}</p>
+      <h2 class="text-white text-xl font-medium">{{ state.video()?.title }}</h2>
+      <p class="text-white/80 text-sm">{{ state.video()?.channelTitle }}</p>
     </div>
 
     <!-- Progress Bar -->
     <div class="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
       <div
         class="h-full bg-white transition-all duration-300"
-        [style.width.%]="progress()"
+        [style.width.%]="state.progress()"
       ></div>
     </div>
   </div>

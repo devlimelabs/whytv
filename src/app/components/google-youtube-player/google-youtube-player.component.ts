@@ -4,11 +4,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
+  HostListener,
   inject,
   input,
   output,
   signal,
   ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { YouTubePlayer } from '@angular/youtube-player';
 import { patchState } from '@ngrx/signals';
@@ -16,6 +18,7 @@ import { LucideAngularModule, Pause, Play, Volume2, VolumeX } from 'lucide-angul
 
 import { Video, videoPlayerState } from '../../states/video-player.state';
 import { SideActionsComponent } from '../side-actions/side-actions.component';
+import { VideoCarouselComponent } from '../video-carousel/video-carousel.component';
 
 /**
  * Google YouTube Player component that uses the official Angular YouTube Player
@@ -31,9 +34,34 @@ import { SideActionsComponent } from '../side-actions/side-actions.component';
     CommonModule,
     YouTubePlayer,
     SideActionsComponent,
-    LucideAngularModule
+    VideoCarouselComponent,
+    LucideAngularModule,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // Add encapsulation: ViewEncapsulation.None to allow styles to affect iframe
+  encapsulation: ViewEncapsulation.None,
+  // Add styles directly to ensure YouTube iframe is visible
+  styles: [`
+    youtube-player {
+      display: block !important;
+      position: absolute !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 10 !important;
+    }
+    
+    youtube-player iframe {
+      display: block !important;
+      position: absolute !important;
+      width: 100% !important;
+      height: 100% !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 10 !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+  `]
 })
 export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
@@ -44,28 +72,37 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
   // Inputs
   videoId = input.required<string>();
-  height = input<number>(360);
-  width = input<number>(640);
-  video = input.required<Video>();
-  isPlaying = input<boolean>(false);
+  height = input<number>(window.innerHeight); 
+  width = input<number>(window.innerWidth);
+  
+  // Window dimensions as signals for internal use
+  protected windowHeight = signal<number>(window.innerHeight);
+  protected windowWidth = signal<number>(window.innerWidth);
+  
+  // Listen for window resize to adjust player dimensions
+  @HostListener('window:resize')
+  onResize() {
+    this.windowHeight.set(window.innerHeight);
+    this.windowWidth.set(window.innerWidth);
+  }
 
   // Outputs
-  playPause = output<void>();
   videoEnded = output<void>();
   videoError = output<string>();
   nextVideo = output<void>();
   previousVideo = output<void>();
   controlsVisibilityChange = output<boolean>();
+  handleCreateChannel = output<MouseEvent>();
 
   // Signals
   showControls = signal(true);
   showPlayPauseButton = signal(true);
-  progress = signal(0);
   isLoading = signal(true);
   error = signal<string | null>(null);
   playerReady = signal(false);
-  isMuted = signal(false);
-  liked = signal(false);
+  progress = signal(0);
+  // Default carousel to hidden and animate it in from the edge
+  carouselVisible = signal(false);
 
   // Player internal state
   private progressInterval: ReturnType<typeof setInterval> | null = null;
@@ -77,6 +114,9 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   protected readonly Pause = Pause;
   protected readonly VolumeX = VolumeX;
   protected readonly Volume2 = Volume2;
+  
+  // Browser window reference for responsive sizing
+  protected readonly window = window;
 
   constructor() {
     // Watch for changes to videoId
@@ -85,10 +125,10 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
       if (id && this.playerReady() && this.youtubePlayer) {
         // The YouTube Player component handles videoId changes automatically
         // We just need to update our internal state
-        this.progress.set(0);
+        patchState(this.state, { progress: 0 });
 
         // Reset mute state when changing videos
-        if (this.isMuted()) {
+        if (this.state.muted()) {
           this.youtubePlayer.mute();
         } else {
           this.youtubePlayer.unMute();
@@ -96,8 +136,13 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
         // Force play the video to ensure autoplay works when video changes
         setTimeout(() => {
-          this.playVideo();
-        }, 0);
+          try {
+            console.log('Effect: attempting to play video with ID:', id);
+            this.youtubePlayer.playVideo();
+          } catch (error) {
+            console.error('Error in videoId effect when playing video:', error);
+          }
+        }, 500);
       }
     });
   }
@@ -118,17 +163,67 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     this.previousVideo.emit();
   }
 
+  toggleVideoCarousel(): void {
+    this.carouselVisible.update(value => !value);
+  }
+
   ngAfterViewInit(): void {
     // Player is initialized in the view
     console.log('Google YouTube Player initialized');
+    console.log('Current videoId:', this.videoId());
+    
+    // Debug: Check if the iframe exists in the DOM
+    setTimeout(() => {
+      const iframe = document.querySelector('youtube-player iframe');
+      console.log('YouTube iframe found in DOM:', !!iframe);
+      if (iframe) {
+        console.log('iframe dimensions:', {
+          width: iframe.clientWidth, 
+          height: iframe.clientHeight,
+          style: iframe.getAttribute('style')
+        });
+        
+        // Force iframe to be visible if it exists
+        const iframeElement = iframe as HTMLElement;
+        iframeElement.style.display = 'block';
+        iframeElement.style.visibility = 'visible';
+        iframeElement.style.opacity = '1';
+        iframeElement.style.zIndex = '10';
+        iframeElement.style.position = 'absolute';
+        iframeElement.style.top = '0';
+        iframeElement.style.left = '0';
+        iframeElement.style.width = '100%';
+        iframeElement.style.height = '100%';
+      }
+    }, 2000);
 
     // The YouTube Player component handles API loading automatically
+    
+    // Attempt to force play even if not ready yet - belt and suspenders approach
+    setTimeout(() => {
+      if (this.youtubePlayer) {
+        try {
+          console.log('ngAfterViewInit: Attempting to play video');
+          this.youtubePlayer.playVideo();
+          if (this.state.muted()) {
+            this.youtubePlayer.mute();
+          }
+        } catch (error) {
+          console.error('Error in ngAfterViewInit when playing video:', error);
+        }
+      }
+    }, 1000);
 
     // If player is already ready but not playing, force play
     if (this.playerReady() && !this.state.playing()) {
       setTimeout(() => {
-        this.playVideo();
-      }, 0);
+        try {
+          console.log('Player ready but not playing: force play');
+          this.youtubePlayer.playVideo();
+        } catch (error) {
+          console.error('Error when forcing play on ready player:', error);
+        }
+      }, 500);
     }
   }
 
@@ -140,16 +235,25 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     console.log('Player ready', event);
     this.playerReady.set(true);
     this.isLoading.set(false);
+    
+    patchState(this.state, {
+      loading: false
+    });
 
     // Ensure video is muted to comply with autoplay policies
     this.muteVideo();
 
     // Force play the video to ensure autoplay works
     setTimeout(() => {
-      this.playVideo();
-      // Start tracking progress after playback begins
-      this.startProgressTracking();
-    }, 0);
+      try {
+        this.youtubePlayer.playVideo();
+        console.log('Attempting to play video');
+        // Start tracking progress after playback begins
+        this.startProgressTracking();
+      } catch (error) {
+        console.error('Error playing video:', error);
+      }
+    }, 500);
   }
 
   /**
@@ -157,28 +261,67 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    * @param event The YouTube player state change event
    */
   onStateChange(event: YT.OnStateChangeEvent): void {
-    console.log('Player state changed', event.data);
+    const stateNames = {
+      '-1': 'UNSTARTED',
+      '0': 'ENDED',
+      '1': 'PLAYING',
+      '2': 'PAUSED',
+      '3': 'BUFFERING',
+      '5': 'CUED'
+    };
+    console.log(`Player state changed to ${stateNames[event.data] || event.data}`);
 
     switch (event.data) {
       case YT.PlayerState.PLAYING:
+        console.log('Video is now playing');
         this.videoPlaying();
         break;
 
       case YT.PlayerState.PAUSED:
+        console.log('Video is now paused');
         this.videoPaused();
         break;
 
       case YT.PlayerState.ENDED:
+        console.log('Video has ended');
         this.videoEnded.emit();
         this.stopProgressTracking();
         break;
 
       case YT.PlayerState.BUFFERING:
+        console.log('Video is buffering');
         this.isLoading.set(true);
+        patchState(this.state, {
+          loading: true
+        });
         break;
 
       case YT.PlayerState.CUED:
+        console.log('Video is cued and ready to play');
         this.isLoading.set(false);
+        patchState(this.state, {
+          loading: false
+        });
+        // Try to play when video is cued
+        setTimeout(() => {
+          try {
+            console.log('Attempting to play after cued state');
+            this.youtubePlayer.playVideo();
+          } catch (error) {
+            console.error('Error playing after cued state:', error);
+          }
+        }, 300);
+        break;
+        
+      case YT.PlayerState.UNSTARTED:
+        console.log('Video is unstarted - attempting to play');
+        setTimeout(() => {
+          try {
+            this.youtubePlayer.playVideo();
+          } catch (error) {
+            console.error('Error playing from unstarted state:', error);
+          }
+        }, 300);
         break;
     }
   }
@@ -209,6 +352,9 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     }
 
     this.error.set(errorMessage);
+    patchState(this.state, {
+      error: errorMessage
+    });
     this.videoError.emit(errorMessage);
   }
 
@@ -216,8 +362,13 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    * Play the video - direct player action
    */
   playVideo(): void {
-    this.youtubePlayer.playVideo();
-    // State is updated via onStateChange event
+    try {
+      console.log('Play video method called');
+      this.youtubePlayer.playVideo();
+      // State is updated via onStateChange event
+    } catch (error) {
+      console.error('Error in playVideo method:', error);
+    }
   }
 
   /**
@@ -262,7 +413,7 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   toggleMute(): void {
     if (!this.playerReady()) return;
 
-    if (this.isMuted()) {
+    if (this.state.muted()) {
       this.unmuteVideo();
     } else {
       this.muteVideo();
@@ -287,10 +438,9 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    * Toggle like status for the current video
    */
   toggleLike(): void {
-    const newLikedState = !this.liked();
-    this.liked.set(newLikedState);
-
-    // Update global state if needed
+    const newLikedState = !this.state.liked();
+    
+    // Update global state
     patchState(this.state, {
       liked: newLikedState
     });
@@ -309,9 +459,8 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
 
         if (duration > 0) {
           const progressPercent = (currentTime / duration) * 100;
-          this.progress.set(progressPercent);
-
-          // Update global state with progress only
+          
+          // Update global state with progress
           patchState(this.state, {
             progress: progressPercent
           });
@@ -357,6 +506,9 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   showVideoControls(): void {
     this.isUserInteracting = true;
     this.showControls.set(true);
+    patchState(this.state, {
+      showControls: true
+    });
     this.controlsVisibilityChange.emit(true);
 
     // Reset the hide controls timer
@@ -372,8 +524,11 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     }
 
     this.hideControlsTimer = setTimeout(() => {
-      if (!this.isUserInteracting && this.isPlaying()) {
+      if (!this.isUserInteracting && this.state.playing()) {
         this.showControls.set(false);
+        patchState(this.state, {
+          showControls: false
+        });
         this.controlsVisibilityChange.emit(false);
       }
     }, 3000);
@@ -392,7 +547,7 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    */
   onMouseLeave(): void {
     this.isUserInteracting = false;
-    if (this.isPlaying()) {
+    if (this.state.playing()) {
       this.resetHideControlsTimer();
     }
   }
@@ -404,13 +559,13 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   handleTap(event: MouseEvent): void {
     if (!(event.target as HTMLElement).closest('button')) {
       // If the video is muted and playing, unmute it on tap
-      if (this.isMuted() && this.isPlaying() && this.playerReady()) {
+      if (this.state.muted() && this.state.playing() && this.playerReady()) {
         this.toggleMute();
         return;
       }
 
       // Handle controls visibility when tapping the player area
-      if (this.isPlaying()) {
+      if (this.state.playing()) {
         // If playing, toggle play/pause button visibility only
         this.showPlayPauseButton.update(value => !value);
       } else {
@@ -432,9 +587,6 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   updateVideo(): void {
     if (this.playerReady()) {
       // The YouTube Player component handles videoId changes automatically
-      // We just need to update our internal state
-      this.progress.set(0);
-
       // Update global state
       patchState(this.state, {
         progress: 0
@@ -454,7 +606,6 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    * Handle video muted event
    */
   videoMuted(): void {
-    this.isMuted.set(true);
     patchState(this.state, {
       muted: true,
     });
@@ -464,7 +615,6 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
    * Handle video unmuted event
    */
   videoUnmuted(): void {
-    this.isMuted.set(false);
     patchState(this.state, {
       muted: false,
     });
@@ -479,7 +629,6 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
       paused: true,
     });
     this.stopProgressTracking();
-    this.playPause.emit();
   }
 
   /**
@@ -491,7 +640,6 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
       paused: false,
     });
     this.startProgressTracking();
-    this.playPause.emit();
   }
 }
 

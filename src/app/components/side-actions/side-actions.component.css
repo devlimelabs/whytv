@@ -6,3 +6,137 @@
 .fill-red-500 {
   fill: #ef4444;
 }
+
+.neon-button {
+  position: relative;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.neon-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #00fffc, #fc00ff, #fffc00);
+  z-index: -1;
+  animation: neon-glow 3s linear infinite;
+  opacity: 0.7;
+  filter: blur(4px);
+}
+
+.neon-button:hover {
+  transform: scale(1.2) translateZ(10px);
+  box-shadow: 0 0 15px rgba(252, 0, 255, 0.8), 0 0 25px rgba(0, 255, 252, 0.6);
+}
+
+.neon-button:hover::before {
+  animation-duration: 1s;
+  opacity: 1;
+  filter: blur(3px);
+}
+
+.neon-icon {
+  filter: drop-shadow(0 0 2px #fff) 
+          drop-shadow(0 0 5px rgba(252, 0, 255, 0.7)) 
+          drop-shadow(0 0 8px rgba(0, 255, 252, 0.5));
+  transition: all 0.3s ease;
+}
+
+.neon-button:hover .neon-icon {
+  filter: drop-shadow(0 0 3px #fff) 
+          drop-shadow(0 0 8px rgba(252, 0, 255, 0.9)) 
+          drop-shadow(0 0 12px rgba(0, 255, 252, 0.8));
+  transform: scale(1.1);
+}
+
+/* Outline Neon Style - Inverted colors with cleaner look */
+.outline-neon-button {
+  position: relative;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  border: 2px solid transparent;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.outline-neon-button::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #00fffc, #fc00ff, #fffc00);
+  z-index: -1;
+  animation: neon-glow 3s linear infinite;
+  opacity: 0.8;
+}
+
+.outline-neon-button:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.outline-neon-icon {
+  stroke: url(#neon-gradient);
+  stroke-width: 2;
+  fill: transparent;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+  transition: all 0.3s ease;
+}
+
+.outline-neon-button:hover .outline-neon-icon {
+  filter: drop-shadow(0 0 3px #fff) 
+          drop-shadow(0 0 5px rgba(252, 0, 255, 0.8)) 
+          drop-shadow(0 0 8px rgba(0, 255, 252, 0.6));
+  transform: scale(1.1);
+}
+
+/* Tooltip styling */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  right: 60px;
+}
+
+@keyframes neon-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

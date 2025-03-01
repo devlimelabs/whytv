@@ -2,21 +2,41 @@
   position: relative;
   overflow: hidden;
   background-color: #000;
-  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: 100%;
 }
 
 .youtube-player {
   position: relative;
-  z-index: 1;
-}
-
-/* Ensure the YouTube iframe fills the container */
-::ng-deep .youtube-player iframe {
+  z-index: 5;
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+}
+
+/* Critical: Force YouTube iframe to be visible */
+::ng-deep youtube-player {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5 !important;
+  background: transparent !important;
+}
+
+/* Critical: Force iframe to be visible and properly sized */
+::ng-deep youtube-player iframe {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 5 !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 /* Progress bar hover effect */

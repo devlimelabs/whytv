@@ -1,12 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, HostListener, inject, OnInit, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { patchState } from '@ngrx/signals';
 import { ToastModule } from 'primeng/toast';
+import { CarouselModule } from 'primeng/carousel';
 
-import { ChannelPickerComponent } from './components/channel-picker/channel-picker.component';
+// Channel Picker removed in favor of side-actions button
 import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
-import { FirestoreService } from './services/firestore.service';
+import { ChannelCarouselComponent } from './components/channel-carousel/channel-carousel.component';
+import { VideoCarouselComponent } from './components/video-carousel/video-carousel.component';
+import { channelsStore } from './states/channels.state';
+import { activeChannelStore } from './states/active-channel.state';
 import { Channel, videoPlayerState } from './states/video-player.state';
+import { ChannelService } from './services/channel/channel.service';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -15,28 +23,63 @@ import { Channel, videoPlayerState } from './states/video-player.state';
   standalone: true,
   imports: [
     CommonModule,
-    ChannelPickerComponent,
+    CarouselModule,
     ToastModule,
-    GoogleYoutubePlayerComponent
+    GoogleYoutubePlayerComponent,
+    ChannelCarouselComponent,
+    VideoCarouselComponent,
+    DialogModule,
+    FormsModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MessageService]
 })
 export class AppComponent implements OnInit {
   constructor(
-    private messageService: MessageService
+    private messageService: MessageService,
+    private channelService: ChannelService
   ) {
-    // Debug effect to log isLoading changes
+    // Update Video Player State when active video changes
     effect(() => {
-      console.log('isLoading changed:', this.isLoading());
+      const activeVideo = this.activeChannelState.activeVideo();
+      if (activeVideo) {
+        patchState(this.playerState, { 
+          video: activeVideo,
+          progress: 0
+        });
+      }
+    });
+    
+    // Update Video Player State when active channel changes
+    effect(() => {
+      const activeChannel = this.channelsState.currentChannel();
+      if (activeChannel) {
+        patchState(this.playerState, { 
+          currentChannel: activeChannel
+        });
+      }
     });
   }
 
-  // Inject the FirestoreService
-  private firestoreService = inject(FirestoreService);
-  private state = inject(videoPlayerState);
+  // State stores
+  readonly channelsState = inject(channelsStore);
+  readonly activeChannelState = inject(activeChannelStore);
+  readonly playerState = inject(videoPlayerState);
 
-  // Mock channels for fallback
+  // Local UI signals
+  isPlaying = signal<boolean>(true);
+  showControls = signal<boolean>(true);
+  useNewPlayer = signal<boolean>(false);
+
+  // Touch handling for swipe gestures
+  touchStart = signal<{ x: number; y: number } | null>(null);
+  touchEnd = signal<{ x: number; y: number } | null>(null);
+  
+  // Channel creation dialog
+  createChannelVisible = signal(false);
+  channelDescription = signal('');
+
+  // Mock channels definition - used for fallback
   private mockChannels: Channel[] = [
     {
       id: 'channel1',
@@ -77,47 +120,27 @@ export class AppComponent implements OnInit {
     }
   ];
 
-  // Signals for state management
-  channels = signal<Channel[]>([]);
-  currentChannel = signal<Channel>(this.mockChannels[0]); // Default to first mock channel until data loads
-  currentVideoIndex = signal<number>(0);
-  isPlaying = signal<boolean>(true);
-  isLoading = signal<boolean>(true);
-  showControls = signal<boolean>(true);
-
-  // Toggle for new player
-  useNewPlayer = signal<boolean>(false);
-
-  // Touch handling for swipe gestures
-  touchStart = signal<{ x: number; y: number } | null>(null);
-  touchEnd = signal<{ x: number; y: number } | null>(null);
-
   async ngOnInit(): Promise<void> {
-    // Load channels from Firestore
+    // Load channels from store, which will fetch from Firestore
     try {
-      const channels = await this.firestoreService.getChannels();
-
-      if (channels.length > 0) {
-        this.channels.set(channels);
-        this.currentChannel.set(channels[0]);
-        this.isLoading.set(false);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Channels Loaded',
-          detail: `${channels.length} channels loaded`,
-          life: 3000
-        });
-      } else {
+      await this.channelsState.loadChannels();
+      
+      // If there are no channels, use mock data as fallback
+      if (this.channelsState.channelCount() === 0) {
         this.messageService.add({
           severity: 'warn',
           summary: 'No Channels',
-          detail: 'No live channels found',
+          detail: 'No live channels found, using mock data',
           life: 3000
         });
-        // Keep using mock data if no channels found
-        this.channels.set(this.mockChannels);
-        this.isLoading.set(false);
+        this.channelsState.setMockChannels(this.mockChannels);
+      } else {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Channels Loaded',
+          detail: `${this.channelsState.channelCount()} channels loaded`,
+          life: 3000
+        });
       }
     } catch (error) {
       console.error('Error loading channels:', error);
@@ -127,9 +150,9 @@ export class AppComponent implements OnInit {
         detail: 'Failed to load channels. Using mock data instead.',
         life: 5000
       });
+      
       // Use mock data on error
-      this.channels.set(this.mockChannels);
-      this.isLoading.set(false);
+      this.channelsState.setMockChannels(this.mockChannels);
     }
   }
 
@@ -162,31 +185,36 @@ export class AppComponent implements OnInit {
     // Determine if the swipe is primarily horizontal or vertical
     const isHorizontalSwipe = Math.abs(horizontalDistance) > Math.abs(verticalDistance);
 
+    const channels = this.channelsState.channels();
+    const currentChannel = this.channelsState.currentChannel();
+    
+    if (!currentChannel || channels.length === 0) return;
+
     if (isHorizontalSwipe) {
       // Horizontal swipe for channel switching
       const isSwipeLeft = horizontalDistance > 50;
       const isSwipeRight = horizontalDistance < -50;
 
-      const currentChannelIndex = this.channels().findIndex(c => c.id === this.currentChannel().id);
+      const currentChannelIndex = channels.findIndex(c => c.id === currentChannel.id);
 
-      if (isSwipeLeft && currentChannelIndex < this.channels().length - 1) {
-        this.handleChannelSelect(this.channels()[currentChannelIndex + 1]);
+      if (isSwipeLeft && currentChannelIndex < channels.length - 1) {
+        this.handleChannelSelect(channels[currentChannelIndex + 1]);
       }
 
       if (isSwipeRight && currentChannelIndex > 0) {
-        this.handleChannelSelect(this.channels()[currentChannelIndex - 1]);
+        this.handleChannelSelect(channels[currentChannelIndex - 1]);
       }
     } else {
       // Vertical swipe for video navigation within channel
       const isSwipeUp = verticalDistance > 50;
       const isSwipeDown = verticalDistance < -50;
 
-      if (isSwipeUp && this.currentVideoIndex() < this.currentChannel().videos.length - 1) {
-        this.currentVideoIndex.update(prev => prev + 1);
+      if (isSwipeUp && this.activeChannelState.hasNextVideo()) {
+        this.handleNextVideo();
       }
 
-      if (isSwipeDown && this.currentVideoIndex() > 0) {
-        this.currentVideoIndex.update(prev => prev - 1);
+      if (isSwipeDown && this.activeChannelState.hasPreviousVideo()) {
+        this.handlePreviousVideo();
       }
     }
 
@@ -195,8 +223,8 @@ export class AppComponent implements OnInit {
   }
 
   handleChannelSelect(channel: Channel): void {
-    this.currentChannel.set(channel);
-    this.currentVideoIndex.set(0);
+    this.channelsState.setCurrentChannel(channel);
+    this.activeChannelState.resetForNewChannel();
 
     // Show toast when channel changes
     this.messageService.add({
@@ -212,9 +240,8 @@ export class AppComponent implements OnInit {
   }
 
   handleVideoEnded(): void {
-    // Auto-advance to the next video
-    const nextIndex = (this.currentVideoIndex() + 1) % this.currentChannel().videos.length;
-    this.currentVideoIndex.set(nextIndex);
+    // Auto-advance to the next video using the store
+    this.activeChannelState.nextVideo();
   }
 
   handleVideoError(error: string): void {
@@ -228,29 +255,31 @@ export class AppComponent implements OnInit {
   }
 
   handleNextVideo(): void {
-    const nextIndex = (this.currentVideoIndex() + 1) % this.currentChannel().videos.length;
-    this.currentVideoIndex.set(nextIndex);
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Next Video',
-      detail: `Now playing: ${this.currentChannel().videos[nextIndex].title}`,
-      life: 2000
-    });
+    this.activeChannelState.nextVideo();
+    
+    const currentVideo = this.activeChannelState.activeVideo();
+    if (currentVideo) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Next Video',
+        detail: `Now playing: ${currentVideo.title}`,
+        life: 2000
+      });
+    }
   }
 
   handlePreviousVideo(): void {
-    const prevIndex = this.currentVideoIndex() === 0
-      ? this.currentChannel().videos.length - 1
-      : this.currentVideoIndex() - 1;
-    this.currentVideoIndex.set(prevIndex);
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Previous Video',
-      detail: `Now playing: ${this.currentChannel().videos[prevIndex].title}`,
-      life: 2000
-    });
+    this.activeChannelState.previousVideo();
+    
+    const currentVideo = this.activeChannelState.activeVideo();
+    if (currentVideo) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Previous Video',
+        detail: `Now playing: ${currentVideo.title}`,
+        life: 2000
+      });
+    }
   }
 
   // Handle controls visibility change from the YouTube player
@@ -269,5 +298,33 @@ export class AppComponent implements OnInit {
       detail: `Now using ${this.useNewPlayer() ? 'new Google' : 'custom'} YouTube player`,
       life: 3000
     });
+  }
+  
+  // Handle create channel button click from side-actions
+  handleCreateChannel(): void {
+    this.createChannelVisible.set(true);
+  }
+  
+  // Create a new channel
+  async createChannel(): Promise<void> {
+    if (!this.channelDescription() || this.channelDescription().trim().length === 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Please enter a channel description',
+        life: 3000
+      });
+      return;
+    }
+    
+    await this.channelService.createChannel(this.channelDescription());
+    this.createChannelVisible.set(false);
+    this.channelDescription.set('');
+  }
+  
+  // Cancel channel creation
+  cancelCreateChannel(): void {
+    this.createChannelVisible.set(false);
+    this.channelDescription.set('');
   }
 }
