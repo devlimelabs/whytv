@@ -2,7 +2,7 @@
   <!-- Logo in top right corner with fade-away behavior -->
   <div
     class="absolute -top-4 -right-2 z-[9999] transition-opacity duration-300"
-    [ngClass]="showControls() ? 'opacity-100' : 'opacity-0'"
+    [ngClass]="playerState.hideUIOverlays() ? 'opacity-0' : 'opacity-100'"
   >
     <img src="/whytv.ai-logo.png" alt="WhyTV Logo" class="h-48 w-auto" />
   </div>
@@ -28,6 +28,7 @@
     (nextVideo)="handleNextVideo()"
     (previousVideo)="handlePreviousVideo()"
     (controlsVisibilityChange)="handleControlsVisibilityChange($event)"
+    (toggleChannelRail)="toggleChannelRail()"
     (handleCreateChannel)="handleCreateChannel()"
     class="w-full h-full"
   />
@@ -49,6 +50,14 @@
   @if (!channelsState.isLoading()) {
     <!-- Channel Carousel (Bottom) -->
     <app-channel-carousel />
+    
+    <!-- Channel Rail (Bottom) -->
+    <app-channel-rail 
+      [channels]="channelsState.channels()" 
+      [activeChannel]="channelsState.currentChannel()"
+      [manuallyToggled]="channelRailVisible()"
+      (channelSelect)="selectChannel($event)"
+    />
     
     <!-- Video Carousel (Right side) -->
     <app-video-carousel />

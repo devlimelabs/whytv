@@ -1,6 +1,9 @@
 <div 
   class="video-carousel-container"
-  [ngClass]="{'visible': visible(), 'hidden': !visible()}"
+  [ngClass]="{
+    'visible': visible() && !playerState.hideUIOverlays(),
+    'hidden': !visible() || playerState.hideUIOverlays()
+  }"
 >
   <div class="h-full w-full flex flex-col justify-center">
     <h2 class="text-white text-xl font-semibold px-2 mb-4">Channel Videos</h2>

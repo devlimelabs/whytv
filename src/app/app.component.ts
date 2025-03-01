@@ -8,6 +8,7 @@ import { CarouselModule } from 'primeng/carousel';
 // Channel Picker removed in favor of side-actions button
 import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
 import { ChannelCarouselComponent } from './components/channel-carousel/channel-carousel.component';
+import { ChannelRailComponent } from './components/channel-rail/channel-rail.component';
 import { VideoCarouselComponent } from './components/video-carousel/video-carousel.component';
 import { channelsStore } from './states/channels.state';
 import { activeChannelStore } from './states/active-channel.state';
@@ -28,6 +29,7 @@ import { FormsModule } from '@angular/forms';
     ToastModule,
     GoogleYoutubePlayerComponent,
     ChannelCarouselComponent,
+    ChannelRailComponent,
     VideoCarouselComponent,
     DialogModule,
     ButtonModule,
@@ -72,6 +74,7 @@ export class AppComponent implements OnInit {
   isPlaying = signal<boolean>(true);
   showControls = signal<boolean>(true);
   useNewPlayer = signal<boolean>(false);
+  channelRailVisible = signal<boolean>(false); // New signal for channel rail visibility
 
   // Touch handling for swipe gestures
   touchStart = signal<{ x: number; y: number } | null>(null);
@@ -310,5 +313,23 @@ export class AppComponent implements OnInit {
   cancelCreateChannel(): void {
     this.createChannelVisible.set(false);
     this.channelDescription.set('');
+  }
+  
+  // Select a channel from the channel rail
+  selectChannel(channel: Channel): void {
+    this.handleChannelSelect(channel);
+  }
+  
+  // Toggle the channel rail visibility
+  toggleChannelRail(): void {
+    this.channelRailVisible.update(visible => !visible);
+    
+    // Notify user when channel rail is toggled
+    this.messageService.add({
+      severity: 'info',
+      summary: this.channelRailVisible() ? 'Channels Shown' : 'Channels Hidden',
+      detail: this.channelRailVisible() ? 'Channel rail is now visible' : 'Channel rail is now hidden',
+      life: 1500
+    });
   }
 }
