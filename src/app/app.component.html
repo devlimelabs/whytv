@@ -91,6 +91,44 @@
             Be descriptive about the content, theme, or mood you're looking for.
           </small>
         </div>
+        
+        <!-- AI Provider Selection -->
+        <div class="field mt-4">
+          <label for="ai-provider" class="mb-2 block text-white">AI Provider</label>
+          <p-dropdown
+            id="ai-provider"
+            [options]="providerOptions"
+            [(ngModel)]="selectedProvider()"
+            (onChange)="onProviderChange($event)"
+            optionLabel="name" 
+            optionValue="value"
+            [styleClass]="'w-full p-2 rounded bg-gray-800 text-white border border-gray-700'"
+            [style]="{'background-color': '#1f2937'}"
+            placeholder="Select an AI provider"
+          ></p-dropdown>
+          <small class="text-gray-400">
+            Select the AI provider to generate your channel.
+          </small>
+        </div>
+        
+        <!-- AI Model Selection -->
+        <div class="field mt-4">
+          <label for="ai-model" class="mb-2 block text-white">AI Model</label>
+          <p-dropdown
+            id="ai-model"
+            [options]="currentModelOptions()"
+            [(ngModel)]="selectedModel()"
+            (onChange)="onModelChange($event)"
+            optionLabel="name" 
+            optionValue="value"
+            [styleClass]="'w-full p-2 rounded bg-gray-800 text-white border border-gray-700'"
+            [style]="{'background-color': '#1f2937'}"
+            placeholder="Select an AI model"
+          ></p-dropdown>
+          <small class="text-gray-400">
+            Select the specific model to use for your channel.
+          </small>
+        </div>
       </div>
       
       <ng-template pTemplate="footer">

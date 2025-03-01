@@ -76,4 +76,6 @@ export interface Channel {
   name: string;
   description: string;
   videos: Video[];
+  provider?: string;  // AI provider used to create the channel
+  model?: string;     // AI model used to create the channel
 }

@@ -3,12 +3,55 @@ import {firestore} from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import {genkit, z} from 'genkit';
-import {googleAI, gemini20Flash} from '@genkit-ai/googleai';
+import {googleAI, gemini15Flash, gemini15Pro, gemini10Flash} from '@genkit-ai/googleai';
+import {anthropicAI} from 'genkitx-anthropic';
+import {openAI} from 'genkitx-openai';
 
-// Initialize Genkit with Google AI plugin
+// Initialize Genkit with all AI plugins
 const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [
+    googleAI(),
+    anthropicAI(),
+    openAI(),
+  ],
 });
+
+// Model constants for different providers
+const models = {
+  // OpenAI models
+  'gpt-4o': {provider: 'openai', id: 'openai/gpt-4o'},
+  'gpt-4-turbo': {provider: 'openai', id: 'openai/gpt-4-turbo'},
+  'gpt-3.5-turbo': {provider: 'openai', id: 'openai/gpt-3.5-turbo'},
+  
+  // Anthropic models
+  'claude-3-opus': {provider: 'anthropic', id: 'anthropic/claude-3-opus'},
+  'claude-3-sonnet': {provider: 'anthropic', id: 'anthropic/claude-3-sonnet'},
+  'claude-3-haiku': {provider: 'anthropic', id: 'anthropic/claude-3-haiku'},
+  
+  // Google models
+  'gemini-1.5-pro': {provider: 'google', id: gemini15Pro},
+  'gemini-1.5-flash': {provider: 'google', id: gemini15Flash},
+  'gemini-1.0-pro': {provider: 'google', id: 'gemini-1.0-pro-latest'},
+  'gemini-1.0-flash': {provider: 'google', id: gemini10Flash},
+};
+
+/**
+ * Helper function to get the model object based on provider and model ID
+ * Falls back to OpenAI GPT-4o if the specified model is not found
+ */
+function getModelById(modelId: string) {
+  if (models[modelId]) {
+    return models[modelId];
+  }
+  
+  // Default to OpenAI GPT-4o
+  logger.info('Specified model not found, falling back to GPT-4o', {
+    requestedModel: modelId,
+    fallbackModel: 'gpt-4o',
+  });
+  
+  return models['gpt-4o'];
+}
 
 // Define a flow for selecting videos
 const selectVideosFlow = ai.defineFlow({
@@ -23,20 +66,28 @@ const selectVideosFlow = ai.defineFlow({
       // Include all video properties
       deleted: z.boolean().optional(),
     })).optional(),
+    provider: z.string().optional(),
+    model: z.string().optional(),
   }),
   outputSchema: z.object({
     selectedVideoIds: z.array(z.string()),
   }),
 }, async (input) => {
+  const { channelDescription, channelName, currentVideos, provider = 'openai', model = 'gpt-4o' } = input;
+  const modelInfo = getModelById(model);
+  
   logger.info('Starting video selection process', {
-    channelName: input.channelName,
-    channelDescription: input.channelDescription,
-    currentVideosCount: input.currentVideos?.length || 0,
+    channelName,
+    channelDescription,
+    currentVideosCount: currentVideos?.length || 0,
+    provider,
+    model,
+    modelId: modelInfo.id,
   });
 
   const prompt = `You are selecting videos for a YouTube Playlist with the following details:
-Channel Name: "${input.channelName}"
-Channel Description: "${input.channelDescription}"
+Channel Name: "${channelName}"
+Channel Description: "${channelDescription}"
 
 Selection Criteria:
 1. Choose videos that align closely with the channel's theme and description
@@ -49,10 +100,10 @@ IMPORTANT: Return ONLY a JSON object with a field 'selectedVideoIds' containing 
 Do not include any other information in the response, just the IDs of videos that should be kept.
 
 Here are the current videos in the playlist (review all properties to make your decision):
-${input.currentVideos ? JSON.stringify(input.currentVideos) : 'None'}`;
+${currentVideos ? JSON.stringify(currentVideos) : 'None'}`;
 
   const result = await ai.generate({
-    model: gemini20Flash,
+    model: modelInfo.id,
     prompt: prompt,
     config: {
       temperature: 0.7,
@@ -149,11 +200,23 @@ export const selectVideosForChannel = firestore.onDocumentUpdated('channels/{cha
         currentVideosCount: currentVideos.length,
       });
 
+      // Get the provider and model from the channel data
+      const provider = channelData.provider || 'openai';
+      const model = channelData.model || 'gpt-4o';
+      
+      logger.info('Using AI provider and model for video selection', {
+        provider,
+        model,
+        channelId: event.params.channelId,
+      });
+      
       // Select videos using AI
       const {selectedVideoIds} = await selectVideosFlow({
         channelDescription: channelData.description,
         channelName: channelData.channelName,
         currentVideos: currentVideos,
+        provider,
+        model,
       });
 
       // Batch write to update video statuses

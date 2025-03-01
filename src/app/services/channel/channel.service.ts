@@ -20,10 +20,16 @@ export class ChannelService implements OnDestroy {
   private activeSubscription: (() => void) | null = null;
 
   /**
-   * Create a new channel with the provided description
+   * Create a new channel with the provided description, provider and model
    * @param channelDescription The description to use for generating channel content
+   * @param provider The AI provider to use (openai, anthropic, google, grok)
+   * @param model The specific AI model to use
    */
-  async createChannel(channelDescription: string): Promise<void> {
+  async createChannel(
+    channelDescription: string, 
+    provider: string = 'openai', 
+    model: string = 'gpt-4o'
+  ): Promise<void> {
     // Validate description
     if (!channelDescription || channelDescription.trim().length === 0) {
       this.messageSvc.add({ 
@@ -49,6 +55,9 @@ export class ChannelService implements OnDestroy {
       status: 'pending',
       createdAt: new Date().toISOString(),
       channelName: 'New Channel', // Will be replaced by the backend
+      // AI provider and model information
+      provider: provider,
+      model: model,
       // Add these fields to ensure consistent document structure
       channelNumber: null,
       queriesCount: 0,

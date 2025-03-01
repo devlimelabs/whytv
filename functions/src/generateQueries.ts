@@ -3,12 +3,55 @@ import {firestore} from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import {genkit, z} from 'genkit';
-import {googleAI, gemini20Flash} from '@genkit-ai/googleai';
+import {googleAI, gemini15Flash, gemini15Pro, gemini10Flash} from '@genkit-ai/googleai';
+import {anthropicAI} from 'genkitx-anthropic';
+import {openAI} from 'genkitx-openai';
 
-// Initialize Genkit with Google AI plugin
+// Initialize Genkit with all AI plugins
 const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [
+    googleAI(),
+    anthropicAI(),
+    openAI(),
+  ],
 });
+
+// Model constants for different providers
+const models = {
+  // OpenAI models
+  'gpt-4o': {provider: 'openai', id: 'openai/gpt-4o'},
+  'gpt-4-turbo': {provider: 'openai', id: 'openai/gpt-4-turbo'},
+  'gpt-3.5-turbo': {provider: 'openai', id: 'openai/gpt-3.5-turbo'},
+  
+  // Anthropic models
+  'claude-3-opus': {provider: 'anthropic', id: 'anthropic/claude-3-opus'},
+  'claude-3-sonnet': {provider: 'anthropic', id: 'anthropic/claude-3-sonnet'},
+  'claude-3-haiku': {provider: 'anthropic', id: 'anthropic/claude-3-haiku'},
+  
+  // Google models
+  'gemini-1.5-pro': {provider: 'google', id: gemini15Pro},
+  'gemini-1.5-flash': {provider: 'google', id: gemini15Flash},
+  'gemini-1.0-pro': {provider: 'google', id: 'gemini-1.0-pro-latest'},
+  'gemini-1.0-flash': {provider: 'google', id: gemini10Flash},
+};
+
+/**
+ * Helper function to get the model object based on provider and model ID
+ * Falls back to OpenAI GPT-4o if the specified model is not found
+ */
+function getModelById(modelId: string) {
+  if (models[modelId]) {
+    return models[modelId];
+  }
+  
+  // Default to OpenAI GPT-4o
+  logger.info('Specified model not found, falling back to GPT-4o', {
+    requestedModel: modelId,
+    fallbackModel: 'gpt-4o',
+  });
+  
+  return models['gpt-4o'];
+}
 
 // Define a flow for generating YouTube search queries
 const generateQueriesFlow = ai.defineFlow({
@@ -16,22 +59,30 @@ const generateQueriesFlow = ai.defineFlow({
   inputSchema: z.object({
     description: z.string(),
     channelName: z.string(),
+    provider: z.string().optional(),
+    model: z.string().optional(),
   }),
   outputSchema: z.object({
     queries: z.array(z.string()),
   }),
 }, async (input) => {
+  const { description, channelName, provider = 'openai', model = 'gpt-4o' } = input;
+  const modelInfo = getModelById(model);
+  
   logger.info('Starting YouTube query generation', {
-    channelName: input.channelName,
-    description: input.description,
+    channelName,
+    description,
+    provider,
+    model,
+    modelId: modelInfo.id,
   });
 
   const prompt = `
 whytv.ai provides a tv like experience for users to watch endless videos, powered by youtube. You are creating queries to populate the channel's playlist.
 Generate 15-20 diverse, highly specific YouTube search queries based on this channel description:
 
-Channel Name: "${input.channelName}"
-Description: "${input.description}"
+Channel Name: "${channelName}"
+Description: "${description}"
 
 Guidelines:
 - Queries should cover different aspects of the channel's theme
@@ -43,7 +94,7 @@ Guidelines:
 Return a JSON array of search queries.`;
 
   const result = await ai.generate({
-    model: gemini20Flash,
+    model: modelInfo.id,
     prompt: prompt,
     config: {
       temperature: 0.7,
@@ -125,10 +176,22 @@ export const generateChannelQueries = firestore.onDocumentUpdated('channels/{cha
         channelName: afterData.channelName,
       });
 
+      // Get the provider and model from the channel data
+      const provider = afterData.provider || 'openai';
+      const model = afterData.model || 'gpt-4o';
+      
+      logger.info('Using AI provider and model', {
+        provider,
+        model,
+        channelId: event.params.channelId,
+      });
+      
       // Generate queries using AI
       const {queries} = await generateQueriesFlow({
         description: afterData.description,
         channelName: afterData.channelName,
+        provider,
+        model,
       });
 
       // Create a batch write for queries
