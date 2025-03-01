@@ -1,7 +1,27 @@
 <div
-  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 transition-all duration-500"
-  [ngClass]="{'translate-x-20': initialAnimation(), 'translate-x-0': !initialAnimation()}"
+  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6"
+  [ngClass]="{
+    'translate-x-20': initialAnimation(), 
+    'translate-x-0': !initialAnimation() && !carouselVisible(), 
+    'translate-x-[-280px]': carouselVisible()
+  }"
+  [style.transition]="transitionStyle"
 >
+  <!-- Button to toggle video rail - positioned at the top of controls for better UX -->
+  <button
+    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip flex-shrink-0"
+    [attr.aria-label]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
+    [attr.data-tooltip]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
+    (click)="handleToggleCarousel($event)"
+    [ngClass]="{'bg-black/30 backdrop-blur-sm rounded-full': carouselVisible()}"
+  >
+    @if (carouselVisible()) {
+      <lucide-icon [img]="X" class="w-8 h-8 text-white" />
+    } @else {
+      <lucide-icon [img]="List" class="w-8 h-8 text-white" />
+    }
+  </button>
+
   <button
     (click)="handleLikeToggle($event)"
     class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
@@ -31,19 +51,6 @@
     (click)="handleShareToggle($event)"
   >
     <lucide-icon [img]="Share2" class="w-8 h-8 text-white" />
-  </button>
-
-  <button
-    class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
-    [attr.aria-label]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
-    [attr.data-tooltip]="carouselVisible() ? 'Close Video List' : 'Open Video List'"
-    (click)="handleToggleCarousel($event)"
-  >
-    @if (carouselVisible()) {
-      <lucide-icon [img]="X" class="w-8 h-8 text-white" />
-    } @else {
-      <lucide-icon [img]="List" class="w-8 h-8 text-white" />
-    }
   </button>
 
   <button

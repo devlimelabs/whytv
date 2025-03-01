@@ -4,12 +4,15 @@
   right: 0;
   bottom: 0;
   width: 300px;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 20;
+  z-index: 19; /* Put below side actions so they can overlap */
   display: flex;
   align-items: center;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 60px; /* Add padding to accommodate side actions */
 }
 
 .video-carousel-container.hidden {
@@ -20,17 +23,7 @@
   transform: translateX(0);
 }
 
-/* Make carousel and side-actions appear as a single unit */
-:host-context(.carousel-visible) ::ng-deep app-side-actions .absolute {
-  transform: translateX(-300px);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-right: 0; /* Remove any margin when attached to carousel */
-}
-
-:host-context(.carousel-hidden) ::ng-deep app-side-actions .absolute {
-  transform: translateX(0);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Remove host-context selectors as we're handling this directly in the side-actions component */
 
 /* Remove the close button as requested */
 
@@ -52,7 +45,7 @@
 .video-item {
   display: flex;
   flex-direction: column;
-  background-color: rgba(30, 30, 30, 0.6);
+  background-color: rgba(30, 30, 30, 0.4);
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
@@ -61,17 +54,20 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(5px);
   border: 2px solid transparent;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .video-item:hover {
-  background-color: rgba(50, 50, 50, 0.8);
+  background-color: rgba(40, 40, 40, 0.6);
   transform: translateX(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .video-item.active {
-  background-color: rgba(70, 70, 70, 0.9);
-  border: 2px solid white;
+  background-color: rgba(50, 50, 50, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.8);
   transform: translateX(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .video-thumbnail {

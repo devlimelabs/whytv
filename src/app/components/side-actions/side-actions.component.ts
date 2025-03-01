@@ -25,6 +25,9 @@ import {
 export class SideActionsComponent implements OnInit {
   // Animation state for initial entrance
   initialAnimation = signal(true);
+  
+  // Transition time matches video carousel transition
+  transitionStyle = "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)";
   protected readonly Heart = Heart;
   protected readonly MessageCircle = MessageCircle;
   protected readonly Share2 = Share2;

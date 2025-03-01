@@ -16,3 +16,64 @@
   bottom: 0;
   z-index: 1;
 }
+
+/* Custom dialog styling for better look on mobile and desktop */
+:host ::ng-deep .p-dialog {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+:host ::ng-deep .p-dialog .p-dialog-header {
+  background: #1a1a1a;
+  color: white;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content {
+  background: #292929;
+  color: white;
+  padding: 1.5rem;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:host ::ng-deep .p-button-primary {
+  background: linear-gradient(45deg, #00fffc, #fc00ff);
+  border: none;
+  font-weight: 600;
+}
+
+:host ::ng-deep .p-button-primary:hover {
+  background: linear-gradient(45deg, #fc00ff, #00fffc);
+  box-shadow: 0 0 10px rgba(0, 255, 252, 0.6);
+}
+
+:host ::ng-deep .p-button-secondary {
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+:host ::ng-deep .p-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  :host ::ng-deep .p-dialog {
+    margin: 0 auto;
+  }
+  
+  :host ::ng-deep .p-dialog .p-dialog-content {
+    padding: 1rem;
+  }
+  
+  :host ::ng-deep .p-dialog .p-dialog-footer {
+    padding: 0.75rem;
+  }
+}

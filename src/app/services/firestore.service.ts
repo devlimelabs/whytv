@@ -1,15 +1,33 @@
 import { inject, Injectable } from '@angular/core';
-import { collection, doc, Firestore, getDoc, getDocs, query, where } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDoc, getDocs, onSnapshot, query, where } from '@angular/fire/firestore';
 import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
+import { Observable, from, Subject } from 'rxjs';
 
 import { Channel, Video } from '../states/video-player.state';
+
+/**
+ * Interface for channel status updates
+ */
+export interface ChannelStatusUpdate {
+  id: string;
+  status: string;
+  channelName: string;
+  queriesCount?: number;
+  queriesCompleted?: number;
+  totalVideosFound?: number;
+  selectedVideosCount?: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirestoreService {
   private firestore = inject(Firestore);
+  
+  // Subject for channel status updates
+  private channelStatusSubject = new Subject<ChannelStatusUpdate>();
+  public channelStatus$ = this.channelStatusSubject.asObservable();
 
   /**
    * Fetches all channels with 'live' status
@@ -122,5 +140,70 @@ export class FirestoreService {
 
     // Sort videos by order if available
     return sortBy(videos, [(video) => video.order || 999]);
+  }
+  
+  /**
+   * Subscribe to updates for a specific channel
+   * @param channelId The ID of the channel to subscribe to
+   * @returns A function to unsubscribe
+   */
+  subscribeToChannel(channelId: string): () => void {
+    // Create a reference to the channel document
+    const channelRef = doc(this.firestore, `channels/${channelId}`);
+    
+    // Set up the listener and return the unsubscribe function
+    return onSnapshot(
+      channelRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data() as any;
+          
+          // Emit the update through the subject
+          this.channelStatusSubject.next({
+            id: snapshot.id,
+            status: data.status || 'unknown',
+            channelName: data.channelName || 'New Channel',
+            queriesCount: data.queriesCount,
+            queriesCompleted: data.queriesCompleted,
+            totalVideosFound: data.totalVideosFound,
+            selectedVideosCount: data.selectedVideosCount
+          });
+        }
+      },
+      (error) => {
+        console.error(`Error subscribing to channel ${channelId}:`, error);
+      }
+    );
+  }
+  
+  /**
+   * Get a single channel by ID without status filtering
+   * For tracking channel creation regardless of status
+   */
+  async getChannelWithoutStatusCheck(channelId: string): Promise<Channel | null> {
+    try {
+      const channelRef = doc(this.firestore, `channels/${channelId}`);
+      const channelDoc = await getDoc(channelRef);
+
+      if (!channelDoc.exists()) return null;
+
+      const channelData = channelDoc.data() as any;
+      
+      // Get videos if they exist
+      let videos: Video[] = [];
+      if (channelData.status === 'live') {
+        videos = await this.getChannelVideos(channelId);
+      }
+
+      return {
+        id: channelDoc.id,
+        name: channelData.channelName,
+        description: channelData.description,
+        videos: videos
+      } as Channel;
+    } catch (error) {
+      console.error(`Error fetching channel ${channelId}:`, error);
+      throw error;
+    }
   }
 }

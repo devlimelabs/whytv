@@ -62,22 +62,23 @@
       [draggable]="false"
       header="Create Channel"
       styleClass="p-dialog-custom"
-      [style]="{width: '500px'}"
+      [style]="{width: '90vw', maxWidth: '500px'}"
       [baseZIndex]="10000"
+      [closeOnEscape]="true"
+      [dismissableMask]="true"
     >
       <div class="p-fluid">
         <div class="field mt-2">
-          <label for="description" class="mb-2 block">Channel Description</label>
+          <label for="description" class="mb-2 block text-white">Channel Description</label>
           <textarea 
             id="description" 
             rows="5" 
-            pInputTextarea 
-            class="w-full" 
+            class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700" 
             placeholder="Describe what kind of videos you want in your channel..."
             [ngModel]="channelDescription()"
             (ngModelChange)="channelDescription.set($event)"
           ></textarea>
-          <small class="text-gray-500">
+          <small class="text-gray-400">
             Be descriptive about the content, theme, or mood you're looking for.
           </small>
         </div>
@@ -87,13 +88,15 @@
         <div class="flex justify-content-end gap-2">
           <button 
             pButton 
+            type="button"
             label="Cancel" 
             icon="pi pi-times" 
-            class="p-button-text" 
+            class="p-button-text p-button-secondary" 
             (click)="cancelCreateChannel()"
           ></button>
           <button 
             pButton 
+            type="button"
             label="Create" 
             icon="pi pi-check" 
             class="p-button-primary" 
