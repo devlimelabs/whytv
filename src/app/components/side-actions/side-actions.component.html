@@ -1,13 +1,13 @@
 <div
-  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 transition-opacity duration-300"
+  class="absolute z-20 right-4 bottom-20 flex flex-col gap-6 transition-all duration-300"
   [ngClass]="{
     'translate-x-20': initialAnimation(),
-    'translate-x-0': !initialAnimation() && !carouselVisible(),
-    'translate-x-[-280px]': carouselVisible(),
+    'translate-x-0': !initialAnimation() && !carouselVisible() && !playerState.hideUIOverlays(),
+    'translate-x-[-280px]': carouselVisible() && !playerState.hideUIOverlays(),
+    'translate-x-20 opacity-0': playerState.hideUIOverlays(),
     'opacity-0': playerState.hideUIOverlays(),
     'opacity-100': !playerState.hideUIOverlays()
   }"
-  [style.transition]="transitionStyle"
 >
   <!-- Button to toggle video rail - positioned at the top of controls for better UX -->
   <button
@@ -99,8 +99,11 @@
 
 <!-- Create Channel Button - Now at the bottom with inverted styles -->
 <div 
-  class="absolute z-20 right-4 bottom-4 transition-opacity duration-300"
-  [ngClass]="{'opacity-0': playerState.hideUIOverlays(), 'opacity-100': !playerState.hideUIOverlays()}"
+  class="absolute z-20 right-4 bottom-4 transition-all duration-300"
+  [ngClass]="{
+    'opacity-0 translate-y-10': playerState.hideUIOverlays(), 
+    'opacity-100 translate-y-0': !playerState.hideUIOverlays()
+  }"
 >
   <svg width="0" height="0">
     <linearGradient id="neon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">

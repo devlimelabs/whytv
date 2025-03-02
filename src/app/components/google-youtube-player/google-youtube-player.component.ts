@@ -187,7 +187,13 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
   }
 
   toggleVideoCarousel(): void {
+    // Toggle the carousel visibility
     this.carouselVisible.update(value => !value);
+    
+    // Reset the hide controls timer when carousel is toggled
+    if (this.carouselVisible()) {
+      this.resetHideControlsTimer();
+    }
   }
   
   handleToggleChannelRail(): void {
@@ -535,25 +541,24 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
     this.showControls.set(true);
     
     // Update global state to show all UI elements
+    // This makes all components visible simultaneously
     patchState(this.state, {
       showControls: true,
       hideUIOverlays: false
     });
     
+    // Notify parent component
     this.controlsVisibilityChange.emit(true);
 
     // Reset the hide controls timer
-    this.resetHideControlsTimer();
-  }
-
-  /**
-   * Hide video controls and all UI overlays after a delay if not interacting
-   */
-  resetHideControlsTimer(): void {
+    // This is called separately to avoid double-patching the state
+    // as resetHideControlsTimer also patches the state
     if (this.hideControlsTimer) {
       clearTimeout(this.hideControlsTimer);
+      this.hideControlsTimer = null;
     }
-
+    
+    // Start a new timer
     this.hideControlsTimer = setTimeout(() => {
       if (!this.isUserInteracting && this.state.playing()) {
         // Hide controls
@@ -573,7 +578,49 @@ export class GoogleYoutubePlayerComponent implements AfterViewInit {
         // Notify parent about visibility change
         this.controlsVisibilityChange.emit(false);
       }
-    }, 3000);
+    }, 2000);
+  }
+
+  /**
+   * Hide video controls and all UI overlays after a delay if not interacting
+   */
+  resetHideControlsTimer(): void {
+    if (this.hideControlsTimer) {
+      clearTimeout(this.hideControlsTimer);
+      
+      // When resetting the timer, always make sure UI elements are visible
+      patchState(this.state, {
+        showControls: true,
+        hideUIOverlays: false
+      });
+      
+      // Notify parent about visibility change
+      this.controlsVisibilityChange.emit(true);
+    }
+
+    this.hideControlsTimer = setTimeout(() => {
+      if (!this.isUserInteracting && this.state.playing()) {
+        // Hide controls
+        this.showControls.set(false);
+        
+        // Hide carousel if visible
+        if (this.carouselVisible()) {
+          this.carouselVisible.set(false);
+        }
+        
+        // First update the local state
+        this.showControls.set(false);
+        
+        // Then update global state to coordinate hiding of all UI components simultaneously
+        patchState(this.state, {
+          showControls: false,
+          hideUIOverlays: true
+        });
+        
+        // Notify parent about visibility change
+        this.controlsVisibilityChange.emit(false);
+      }
+    }, 2000);
   }
 
   /**

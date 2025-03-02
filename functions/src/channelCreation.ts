@@ -1,54 +1,71 @@
-import {firestore} from 'firebase-functions/v2';
+import { gemini15Flash, gemini15Pro, googleAI } from '@genkit-ai/googleai';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
-import {genkit, z} from 'genkit';
-import {googleAI, gemini15Flash, gemini15Pro, gemini10Flash} from '@genkit-ai/googleai';
-import {anthropicAI} from 'genkitx-anthropic';
-import {openAI} from 'genkitx-openai';
+import { defineString } from 'firebase-functions/params';
+import { firestore } from 'firebase-functions/v2';
+import { genkit, z } from 'genkit';
+import {
+  anthropic,
+  claude35Haiku,
+  claude35Sonnet,
+  claude37Sonnet,
+  claude3Haiku,
+  claude3Opus,
+  claude3Sonnet,
+} from 'genkitx-anthropic';
+import { gpt35Turbo, gpt4o, gpt4oMini, gpt4Turbo, openAI } from 'genkitx-openai';
+
+const anthropicApiKey = defineString('ANTHROPIC_API_KEY');
+const openAIApiKey = defineString('OPENAI_API_KEY');
 
 // Initialize Genkit with all AI plugins
 const ai = genkit({
   plugins: [
     googleAI(),
-    anthropicAI(),
-    openAI(),
+    anthropic({apiKey: anthropicApiKey.value()}),
+    openAI({apiKey: openAIApiKey.value()}),
   ],
 });
 
 // Model constants for different providers
-const models = {
+const models: Record<string, {provider: string, id: any}> = {
   // OpenAI models
-  'gpt-4o': {provider: 'openai', id: 'openai/gpt-4o'},
-  'gpt-4-turbo': {provider: 'openai', id: 'openai/gpt-4-turbo'},
-  'gpt-3.5-turbo': {provider: 'openai', id: 'openai/gpt-3.5-turbo'},
-  
+  'gpt-4o': {provider: 'openai', id: gpt4o},
+  'gpt-4o-mini': {provider: 'openai', id: gpt4oMini},
+  'gpt-4-turbo': {provider: 'openai', id: gpt4Turbo},
+  'gpt-3.5-turbo': {provider: 'openai', id: gpt35Turbo},
+
   // Anthropic models
-  'claude-3-opus': {provider: 'anthropic', id: 'anthropic/claude-3-opus'},
-  'claude-3-sonnet': {provider: 'anthropic', id: 'anthropic/claude-3-sonnet'},
-  'claude-3-haiku': {provider: 'anthropic', id: 'anthropic/claude-3-haiku'},
-  
+  'claude-3.7-sonnet': {provider: 'anthropic', id: claude37Sonnet},
+  'claude-3.5-sonnet': {provider: 'anthropic', id: claude35Sonnet},
+  'claude-3-opus': {provider: 'anthropic', id: claude3Opus},
+  'claude-3-sonnet': {provider: 'anthropic', id: claude3Sonnet},
+  'claude-3-haiku': {provider: 'anthropic', id: claude3Haiku},
+  'claude-3.5-haiku': {provider: 'anthropic', id: claude35Haiku},
+
   // Google models
   'gemini-1.5-pro': {provider: 'google', id: gemini15Pro},
   'gemini-1.5-flash': {provider: 'google', id: gemini15Flash},
   'gemini-1.0-pro': {provider: 'google', id: 'gemini-1.0-pro-latest'},
-  'gemini-1.0-flash': {provider: 'google', id: gemini10Flash},
 };
 
 /**
  * Helper function to get the model object based on provider and model ID
  * Falls back to OpenAI GPT-4o if the specified model is not found
+ * @param {string} modelId - The ID of the model to get
+ * @return {object} The model object with provider and id
  */
 function getModelById(modelId: string) {
   if (models[modelId]) {
     return models[modelId];
   }
-  
+
   // Default to OpenAI GPT-4o
   logger.warn('Specified model not found, falling back to GPT-4o', {
     requestedModel: modelId,
     fallbackModel: 'gpt-4o',
   });
-  
+
   return models['gpt-4o'];
 }
 
@@ -62,9 +79,9 @@ const generateChannelNameFlow = ai.defineFlow({
   }),
   outputSchema: z.string(),
 }, async (input) => {
-  const { description, provider = 'openai', model = 'gpt-4o' } = input;
+  const {description, provider = 'openai', model = 'gpt-4o'} = input;
   const modelInfo = getModelById(model);
-  
+
   logger.info(`Generating channel name for description with ${provider}/${model}`, {
     description,
     provider,
@@ -146,7 +163,7 @@ export const onChannelCreate = firestore.onDocumentCreated('channels/{channelId}
       // Get the provider and model from the channel data
       const provider = channelData.provider || 'openai';
       const model = channelData.model || 'gpt-4o';
-      
+
       // Generate channel name using AI with specified provider and model
       const channelName = await generateChannelNameFlow({
         description,

@@ -21,7 +21,7 @@ export class ChannelRailComponent implements OnInit {
   
   // Inputs
   channels = input.required<Channel[]>();
-  activeChannel = input.required<Channel>();
+  activeChannel = input.required<Channel | null>();
   manuallyToggled = input<boolean>(false); // Input for external control
 
   // Outputs
@@ -81,7 +81,7 @@ export class ChannelRailComponent implements OnInit {
          // Only automatically hide if not manually toggled externally
          if (!this.manuallyToggled()) {
            // Add delay before hiding on touch to allow for interaction
-           setTimeout(() => this.isVisible.set(false), 3000);
+           setTimeout(() => this.isVisible.set(false), 2000);
          }
        });
     }

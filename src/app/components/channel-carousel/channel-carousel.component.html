@@ -1,6 +1,6 @@
 <div 
   class="channel-carousel-container"
-  [ngClass]="{'visible': visible(), 'hidden': !visible()}"
+  [ngClass]="{'visible': visible() && !playerState.hideUIOverlays(), 'hidden': !visible() || playerState.hideUIOverlays()}"
 >
   <div class="toggle-btn" (click)="toggleVisibility()">
     <div class="toggle-indicator"></div>

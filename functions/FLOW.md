@@ -81,7 +81,7 @@ flowchart TD
 - **Purpose**: Check if all queries are completed and update channel status
 - **Actions**:
   - Check if all queries for the channel are completed
-  - If all completed, update channel status to 'videos_ready'
+  - If all completed, update channel status to 'select_videos'
 
 ### 5. selectVideosForChannel
 - **Trigger**: When a channel document is updated with status 'select_videos'
@@ -107,8 +107,7 @@ Channel statuses flow in this order:
 1. `new` - Initial status after channel creation
 2. `processing queries` - Generating search queries
 3. `queries ready` - Queries generated and ready for processing
-4. `videos_ready` - All queries processed and videos found
-5. `select_videos` - Triggered by user to select videos
+5. `select_videos` - All queries processed and videos found
 6. `videos_selected` - Videos selected and ready for playlist creation
 7. `created` - Final status after playlist creation
 

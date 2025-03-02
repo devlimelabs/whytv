@@ -14,7 +14,7 @@ export const cleanupEmptyChannels = scheduler.onSchedule(
     retryCount: 3,
     maxRetrySeconds: 60,
   },
-  async (event) => {
+  async () => {
     logger.info('Starting cleanup of empty channel documents');
 
     try {

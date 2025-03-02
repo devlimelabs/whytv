@@ -3,53 +3,58 @@ import {firestore} from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as logger from 'firebase-functions/logger';
 import {genkit, z} from 'genkit';
-import {googleAI, gemini15Flash, gemini15Pro, gemini10Flash} from '@genkit-ai/googleai';
-import {anthropicAI} from 'genkitx-anthropic';
-import {openAI} from 'genkitx-openai';
+import {googleAI, gemini15Flash, gemini15Pro} from '@genkit-ai/googleai';
+import {anthropic, claude37Sonnet, claude35Sonnet, claude3Opus, claude3Sonnet, claude3Haiku, claude35Haiku} from 'genkitx-anthropic';
+import {openAI, gpt4o, gpt4oMini, gpt4Turbo, gpt35Turbo} from 'genkitx-openai';
 
 // Initialize Genkit with all AI plugins
 const ai = genkit({
   plugins: [
     googleAI(),
-    anthropicAI(),
+    anthropic(),
     openAI(),
   ],
 });
 
 // Model constants for different providers
-const models = {
+const models: Record<string, {provider: string, id: any}> = {
   // OpenAI models
-  'gpt-4o': {provider: 'openai', id: 'openai/gpt-4o'},
-  'gpt-4-turbo': {provider: 'openai', id: 'openai/gpt-4-turbo'},
-  'gpt-3.5-turbo': {provider: 'openai', id: 'openai/gpt-3.5-turbo'},
-  
+  'gpt-4o': {provider: 'openai', id: gpt4o},
+  'gpt-4o-mini': {provider: 'openai', id: gpt4oMini},
+  'gpt-4-turbo': {provider: 'openai', id: gpt4Turbo},
+  'gpt-3.5-turbo': {provider: 'openai', id: gpt35Turbo},
+
   // Anthropic models
-  'claude-3-opus': {provider: 'anthropic', id: 'anthropic/claude-3-opus'},
-  'claude-3-sonnet': {provider: 'anthropic', id: 'anthropic/claude-3-sonnet'},
-  'claude-3-haiku': {provider: 'anthropic', id: 'anthropic/claude-3-haiku'},
-  
+  'claude-3.7-sonnet': {provider: 'anthropic', id: claude37Sonnet},
+  'claude-3.5-sonnet': {provider: 'anthropic', id: claude35Sonnet},
+  'claude-3-opus': {provider: 'anthropic', id: claude3Opus},
+  'claude-3-sonnet': {provider: 'anthropic', id: claude3Sonnet},
+  'claude-3-haiku': {provider: 'anthropic', id: claude3Haiku},
+  'claude-3.5-haiku': {provider: 'anthropic', id: claude35Haiku},
+
   // Google models
   'gemini-1.5-pro': {provider: 'google', id: gemini15Pro},
   'gemini-1.5-flash': {provider: 'google', id: gemini15Flash},
   'gemini-1.0-pro': {provider: 'google', id: 'gemini-1.0-pro-latest'},
-  'gemini-1.0-flash': {provider: 'google', id: gemini10Flash},
 };
 
 /**
  * Helper function to get the model object based on provider and model ID
  * Falls back to OpenAI GPT-4o if the specified model is not found
+ * @param {string} modelId - The ID of the model to get
+ * @return {object} The model object with provider and id
  */
 function getModelById(modelId: string) {
   if (models[modelId]) {
     return models[modelId];
   }
-  
+
   // Default to OpenAI GPT-4o
   logger.info('Specified model not found, falling back to GPT-4o', {
     requestedModel: modelId,
     fallbackModel: 'gpt-4o',
   });
-  
+
   return models['gpt-4o'];
 }
 
@@ -66,9 +71,9 @@ const generateQueriesFlow = ai.defineFlow({
     queries: z.array(z.string()),
   }),
 }, async (input) => {
-  const { description, channelName, provider = 'openai', model = 'gpt-4o' } = input;
+  const {description, channelName, provider = 'openai', model = 'gpt-4o'} = input;
   const modelInfo = getModelById(model);
-  
+
   logger.info('Starting YouTube query generation', {
     channelName,
     description,
@@ -179,13 +184,13 @@ export const generateChannelQueries = firestore.onDocumentUpdated('channels/{cha
       // Get the provider and model from the channel data
       const provider = afterData.provider || 'openai';
       const model = afterData.model || 'gpt-4o';
-      
+
       logger.info('Using AI provider and model', {
         provider,
         model,
         channelId: event.params.channelId,
       });
-      
+
       // Generate queries using AI
       const {queries} = await generateQueriesFlow({
         description: afterData.description,

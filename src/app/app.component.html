@@ -1,8 +1,8 @@
 <div class="relative h-screen w-full overflow-hidden bg-black">
   <!-- Logo in top right corner with fade-away behavior -->
   <div
-    class="absolute -top-4 -right-2 z-[9999] transition-opacity duration-300"
-    [ngClass]="playerState.hideUIOverlays() ? 'opacity-0' : 'opacity-100'"
+    class="absolute -top-4 -right-2 z-[9999] transition-all duration-300 ease-in-out"
+    [ngClass]="playerState.hideUIOverlays() ? 'opacity-0 translate-y-[-20px] translate-x-[20px]' : 'opacity-100 translate-y-0 translate-x-0'"
   >
     <img src="/whytv.ai-logo.png" alt="WhyTV Logo" class="h-48 w-auto" />
   </div>
@@ -98,8 +98,8 @@
           <p-dropdown
             id="ai-provider"
             [options]="providerOptions"
-            [(ngModel)]="selectedProvider()"
-            (onChange)="onProviderChange($event)"
+            [ngModel]="selectedProvider()"
+            (ngModelChange)="selectedProvider.set($event); onProviderChange({value: $event})"
             optionLabel="name" 
             optionValue="value"
             [styleClass]="'w-full p-2 rounded bg-gray-800 text-white border border-gray-700'"
@@ -117,8 +117,8 @@
           <p-dropdown
             id="ai-model"
             [options]="currentModelOptions()"
-            [(ngModel)]="selectedModel()"
-            (onChange)="onModelChange($event)"
+            [ngModel]="selectedModel()"
+            (ngModelChange)="selectedModel.set($event); onModelChange({value: $event})"
             optionLabel="name" 
             optionValue="value"
             [styleClass]="'w-full p-2 rounded bg-gray-800 text-white border border-gray-700'"

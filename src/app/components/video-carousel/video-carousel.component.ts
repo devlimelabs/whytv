@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, input, output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CarouselModule } from 'primeng/carousel';
 import { LucideAngularModule, ChevronUp, ChevronDown, X } from 'lucide-angular';
+import { fromEvent } from 'rxjs';
 
 import { activeChannelStore } from '../../states/active-channel.state';
 import { channelsStore } from '../../states/channels.state';
@@ -15,7 +17,9 @@ import { Video, videoPlayerState } from '../../states/video-player.state';
   styleUrls: ['./video-carousel.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VideoCarouselComponent {
+export class VideoCarouselComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+  private hideTimer: number | null = null;
   // Inject the stores
   private activeChannelState = inject(activeChannelStore);
   private channelsState = inject(channelsStore);
@@ -31,6 +35,9 @@ export class VideoCarouselComponent {
   
   // Output to close the carousel
   toggleVisibility = output<void>();
+  
+  // Track user interaction
+  private isUserInteracting = signal(false);
   
   // Configuration for the carousel
   responsiveOptions = [
@@ -83,5 +90,41 @@ export class VideoCarouselComponent {
     const remainingSeconds = Math.floor(seconds % 60);
     
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+  
+  ngOnInit(): void {
+    // Set up event listeners for mouse and touch events
+    fromEvent<MouseEvent>(document, 'mousemove')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.isUserInteracting.set(true);
+        this.resetHideTimer();
+      });
+      
+    fromEvent(document, 'touchstart')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.isUserInteracting.set(true);
+        this.resetHideTimer();
+      });
+  }
+  
+  // Reset the hide timer whenever there's user interaction
+  private resetHideTimer(): void {
+    if (this.hideTimer) {
+      window.clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
+    
+    // If the carousel is visible, start a timer to hide it
+    if (this.visible()) {
+      this.hideTimer = window.setTimeout(() => {
+        if (!this.isUserInteracting() || this.playerState.playing()) {
+          this.toggleVisibility.emit();
+        }
+        // Reset interaction state
+        this.isUserInteracting.set(false);
+      }, 2000);
+    }
   }
 }

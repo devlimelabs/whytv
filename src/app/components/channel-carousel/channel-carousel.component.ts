@@ -4,7 +4,7 @@ import { CarouselModule } from 'primeng/carousel';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
 
 import { channelsStore } from '../../states/channels.state';
-import { Channel } from '../../states/video-player.state';
+import { Channel, videoPlayerState } from '../../states/video-player.state';
 
 @Component({
   selector: 'app-channel-carousel',
@@ -15,8 +15,9 @@ import { Channel } from '../../states/video-player.state';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChannelCarouselComponent {
-  // Inject the channels store
+  // Inject the stores
   private channelsState = inject(channelsStore);
+  protected playerState = inject(videoPlayerState);
   
   // Icons
   protected readonly ChevronLeft = ChevronLeft;
