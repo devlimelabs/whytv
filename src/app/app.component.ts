@@ -1,41 +1,53 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, HostListener, inject, OnInit, signal } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostListener,
+  inject,
+  model,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterOutlet } from '@angular/router';
 import { patchState } from '@ngrx/signals';
-import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
-import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
 
-// Channel Picker removed in favor of side-actions button
-import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
 import { ChannelCarouselComponent } from './components/channel-carousel/channel-carousel.component';
 import { ChannelRailComponent } from './components/channel-rail/channel-rail.component';
+import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
 import { VideoCarouselComponent } from './components/video-carousel/video-carousel.component';
-import { channelsStore } from './states/channels.state';
-import { activeChannelStore } from './states/active-channel.state';
-import { Channel, videoPlayerState } from './states/video-player.state';
 import { ChannelService } from './services/channel/channel.service';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { FormsModule } from '@angular/forms';
+import { activeChannelStore } from './states/active-channel.state';
+import { channelsStore } from './states/channels.state';
+import { Channel, videoPlayerState } from './states/video-player.state';
 
+// Channel Picker removed in favor of side-actions button
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   standalone: true,
   imports: [
+    RouterOutlet,
     CommonModule,
     CarouselModule,
     ToastModule,
     GoogleYoutubePlayerComponent,
     ChannelCarouselComponent,
-    ChannelRailComponent,
     VideoCarouselComponent,
     DialogModule,
     ButtonModule,
     FormsModule,
-    DropdownModule
+    SelectModule,
+    ChannelRailComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MessageService]
@@ -45,22 +57,32 @@ export class AppComponent implements OnInit {
     private messageService: MessageService,
     private channelService: ChannelService
   ) {
+
+
+    effect(() => {
+      try {
+        localStorage.setItem('whytv_provider', this.selectedProvider());
+        localStorage.setItem('whytv_model', this.selectedModel());
+      } catch (error) {
+        console.error('Error saving model preferences to localStorage:', error);
+      }
+    });
     // Update Video Player State when active video changes
     effect(() => {
       const activeVideo = this.activeChannelState.activeVideo();
       if (activeVideo) {
-        patchState(this.playerState, { 
+        patchState(this.playerState, {
           video: activeVideo,
           progress: 0
         });
       }
     });
-    
+
     // Update Video Player State when active channel changes
     effect(() => {
       const activeChannel = this.channelsState.currentChannel();
       if (activeChannel) {
-        patchState(this.playerState, { 
+        patchState(this.playerState, {
           currentChannel: activeChannel
         });
       }
@@ -81,29 +103,34 @@ export class AppComponent implements OnInit {
   // Touch handling for swipe gestures
   touchStart = signal<{ x: number; y: number } | null>(null);
   touchEnd = signal<{ x: number; y: number } | null>(null);
-  
+
   // Channel creation dialog
   createChannelVisible = signal(false);
-  channelDescription = signal('');
-  
+  channelDescription = model('');
+
   // AI Provider and Model settings
   providerOptions = [
     { name: 'OpenAI', value: 'openai' },
     { name: 'Anthropic', value: 'anthropic' },
     { name: 'Google AI', value: 'google' }
   ];
-  
+
   // Available models by provider
   modelOptions = {
     openai: [
       { name: 'GPT-4o', value: 'gpt-4o' },
       { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
-      { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' }
+      { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
+      { name: 'GPT-4o Mini', value: 'gpt-4o-mini' },
+      { name: 'o1 Mini', value: 'o1-mini' },
     ],
     anthropic: [
+      { name: 'Claude 3.7 Sonnet', value: 'claude-3.7-sonnet' },
+      { name: 'Claude 3.5 Sonnet', value: 'claude-3.5-sonnet' },
       { name: 'Claude 3 Opus', value: 'claude-3-opus' },
       { name: 'Claude 3 Sonnet', value: 'claude-3-sonnet' },
-      { name: 'Claude 3 Haiku', value: 'claude-3-haiku' }
+      { name: 'Claude 3.5 Haiku', value: 'claude-3.5-haiku' },
+      { name: 'Claude 3 Haiku', value: 'claude-3-haiku' },
     ],
     google: [
       { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
@@ -112,10 +139,11 @@ export class AppComponent implements OnInit {
       { name: 'Gemini 1.0 Flash', value: 'gemini-1.0-flash' }
     ]
   };
-  
-  selectedProvider = signal('openai'); // Default provider
-  selectedModel = signal('gpt-4o'); // Default model
-  currentModelOptions = signal(this.modelOptions.openai);
+
+  selectedProvider = model('openai'); // Default provider
+  selectedModel = model('gpt-4o'); // Default model
+  currentModelOptions = computed(() =>
+    this.modelOptions[this.selectedProvider() as keyof typeof this.modelOptions]);
 
   // Mock channels definition - used for fallback
   private mockChannels: Channel[] = [
@@ -158,11 +186,12 @@ export class AppComponent implements OnInit {
     }
   ];
 
+
   async ngOnInit(): Promise<void> {
     // Load channels from store, which will fetch from Firestore
     try {
       await this.channelsState.loadChannels();
-      
+
       // If there are no channels, use mock data as fallback
       if (this.channelsState.channelCount() === 0) {
         this.messageService.add({
@@ -188,61 +217,26 @@ export class AppComponent implements OnInit {
         detail: 'Failed to load channels. Using mock data instead.',
         life: 5000
       });
-      
+
       // Use mock data on error
       this.channelsState.setMockChannels(this.mockChannels);
     }
-    
+
     // Load saved provider and model preferences from localStorage
     this.loadSavedModelPreferences();
   }
-  
-  // Handle provider change
-  onProviderChange(event: any): void {
-    const providerValue = event.value;
-    this.selectedProvider.set(providerValue);
-    this.currentModelOptions.set(this.modelOptions[providerValue as keyof typeof this.modelOptions]);
-    
-    // Reset to first model in the list by default
-    if (this.currentModelOptions().length > 0) {
-      this.selectedModel.set(this.currentModelOptions()[0].value);
-    }
-    
-    // Save preferences to localStorage
-    this.saveModelPreferences();
-  }
-  
-  // Handle model change
-  onModelChange(event: any): void {
-    this.selectedModel.set(event.value);
-    
-    // Save preferences to localStorage
-    this.saveModelPreferences();
-  }
-  
-  // Save model preferences to localStorage
-  saveModelPreferences(): void {
-    try {
-      localStorage.setItem('whytv_provider', this.selectedProvider());
-      localStorage.setItem('whytv_model', this.selectedModel());
-    } catch (error) {
-      console.error('Error saving model preferences to localStorage:', error);
-    }
-  }
-  
+
+
   // Load saved model preferences from localStorage
   loadSavedModelPreferences(): void {
     try {
       const savedProvider = localStorage.getItem('whytv_provider');
       const savedModel = localStorage.getItem('whytv_model');
-      
+
       if (savedProvider) {
         this.selectedProvider.set(savedProvider);
-        this.currentModelOptions.set(
-          this.modelOptions[savedProvider as keyof typeof this.modelOptions] || this.modelOptions.openai
-        );
       }
-      
+
       if (savedModel) {
         // Check if the saved model is valid for the current provider
         const modelExists = this.currentModelOptions().some(model => model.value === savedModel);
@@ -285,7 +279,7 @@ export class AppComponent implements OnInit {
 
     const channels = this.channelsState.channels();
     const currentChannel = this.channelsState.currentChannel();
-    
+
     if (!currentChannel || channels.length === 0) return;
 
     // Horizontal swipe for channel switching only
@@ -340,7 +334,7 @@ export class AppComponent implements OnInit {
 
   handleNextVideo(): void {
     this.activeChannelState.nextVideo();
-    
+
     const currentVideo = this.activeChannelState.activeVideo();
     if (currentVideo) {
       this.messageService.add({
@@ -354,7 +348,7 @@ export class AppComponent implements OnInit {
 
   handlePreviousVideo(): void {
     this.activeChannelState.previousVideo();
-    
+
     const currentVideo = this.activeChannelState.activeVideo();
     if (currentVideo) {
       this.messageService.add({
@@ -383,12 +377,12 @@ export class AppComponent implements OnInit {
       life: 3000
     });
   }
-  
+
   // Handle create channel button click from side-actions
   handleCreateChannel(): void {
     this.createChannelVisible.set(true);
   }
-  
+
   // Create a new channel
   async createChannel(): Promise<void> {
     if (!this.channelDescription() || this.channelDescription().trim().length === 0) {
@@ -400,33 +394,33 @@ export class AppComponent implements OnInit {
       });
       return;
     }
-    
+
     // Create channel with selected provider and model
     await this.channelService.createChannel(
       this.channelDescription(),
       this.selectedProvider(),
       this.selectedModel()
     );
-    
+
     this.createChannelVisible.set(false);
     this.channelDescription.set('');
   }
-  
+
   // Cancel channel creation
   cancelCreateChannel(): void {
     this.createChannelVisible.set(false);
     this.channelDescription.set('');
   }
-  
+
   // Select a channel from the channel rail
   selectChannel(channel: Channel): void {
     this.handleChannelSelect(channel);
   }
-  
+
   // Toggle the channel rail visibility
   toggleChannelRail(): void {
     this.channelRailVisible.update(visible => !visible);
-    
+
     // Notify user when channel rail is toggled
     this.messageService.add({
       severity: 'info',

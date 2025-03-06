@@ -39,6 +39,16 @@
   pointer-events: auto !important;
 }
 
+/* Hide YouTube related videos and suggestions */
+::ng-deep .ytp-pause-overlay,
+::ng-deep .ytp-related-videos-card,
+::ng-deep .ytp-endscreen-content {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* Progress bar hover effect */
 .progress-container {
   position: relative;
@@ -80,7 +90,17 @@ button:hover {
 }
 
 button {
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.3s ease;
+}
+
+/* Play/pause button fade transition */
+.play-pause-button {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
+.play-pause-button.hidden {
+  opacity: 0;
 }
 
 /* For a better responsive design */

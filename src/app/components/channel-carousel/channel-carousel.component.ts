@@ -1,31 +1,43 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { ChevronLeft, ChevronRight, LucideAngularModule } from 'lucide-angular';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { CarouselModule } from 'primeng/carousel';
-import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
 
+import { ChannelService } from '../../services/channel/channel.service';
 import { channelsStore } from '../../states/channels.state';
 import { Channel, videoPlayerState } from '../../states/video-player.state';
 
 @Component({
   selector: 'app-channel-carousel',
   standalone: true,
-  imports: [CommonModule, CarouselModule, LucideAngularModule],
+  imports: [
+    ButtonModule,
+    CardModule,
+    CarouselModule,
+    CommonModule,
+    LucideAngularModule,
+    NgOptimizedImage
+  ],
   templateUrl: './channel-carousel.component.html',
   styleUrls: ['./channel-carousel.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChannelCarouselComponent {
   // Inject the stores
-  private channelsState = inject(channelsStore);
-  protected playerState = inject(videoPlayerState);
-  
+  readonly channelsState = inject(channelsStore);
+  private channelsSvc = inject(ChannelService);
+  readonly playerState = inject(videoPlayerState);
+  private router = inject(Router);
   // Icons
   protected readonly ChevronLeft = ChevronLeft;
   protected readonly ChevronRight = ChevronRight;
-  
+
   // UI state
   visible = signal(true);
-  
+
   // Configuration for the carousel
   responsiveOptions = [
     {
@@ -54,27 +66,27 @@ export class ChannelCarouselComponent {
       numScroll: 1
     }
   ];
-  
+
   // Use the channels from the store
   get channels() {
     return this.channelsState.channels();
   }
-  
+
   // Get the current channel for highlighting
   get currentChannel() {
     return this.channelsState.currentChannel();
   }
-  
+
   // Select a channel when clicked
   selectChannel(channel: Channel) {
-    this.channelsState.setCurrentChannel(channel);
+    this.router.navigate(['./'], { queryParams: { channelId: channel.id } });
   }
-  
+
   // Check if this is the current channel (for styling)
   isCurrentChannel(channel: Channel): boolean {
     return this.currentChannel?.id === channel.id;
   }
-  
+
   // Toggle visibility of the carousel
   toggleVisibility() {
     this.visible.update(value => !value);

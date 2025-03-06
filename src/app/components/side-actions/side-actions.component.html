@@ -57,18 +57,18 @@
 
   <button
     class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
-    aria-label="Previous Video"
-    data-tooltip="Previous Video"
-    (click)="handlePreviousVideo($event)"
+    aria-label="Next Video"
+    data-tooltip="Next Video"
+    (click)="handleNextVideo($event)"
   >
     <lucide-icon [img]="ChevronUp" class="w-8 h-8 text-white" />
   </button>
 
   <button
     class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip"
-    aria-label="Next Video"
-    data-tooltip="Next Video"
-    (click)="handleNextVideo($event)"
+    aria-label="Previous Video"
+    data-tooltip="Previous Video"
+    (click)="handlePreviousVideo($event)"
   >
     <lucide-icon [img]="ChevronDown" class="w-8 h-8 text-white" />
   </button>

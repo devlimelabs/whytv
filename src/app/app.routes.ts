@@ -1,10 +1,18 @@
 import { Routes } from '@angular/router';
 
-import { AppComponent } from './app.component';
+import { WhytvPlayerComponent } from './components/whytv-player/whytv-player.component';
+import { HomePage } from './pages/home/home.page';
 
 export const routes: Routes = [
+  // {
+  //   path: '',
+  //   component: AppComponent
+  // },
   {
     path: '',
-    component: AppComponent
-  }
+    component: HomePage,
+    children: [
+      { path: '', component: WhytvPlayerComponent },
+    ],
+  },
 ];

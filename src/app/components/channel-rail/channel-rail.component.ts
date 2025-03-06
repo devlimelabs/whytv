@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideAngularModule, Tv } from 'lucide-angular';
 import { fromEvent } from 'rxjs';
+import { patchState } from '@ngrx/signals';
 
 import { Channel, videoPlayerState } from '../../states/video-player.state';
 
@@ -37,52 +38,54 @@ export class ChannelRailComponent implements OnInit {
   // Method to toggle visibility of the rail
   toggleVisibility(): void {
     this.isVisible.update(visible => !visible);
+    
+    // Update user activity state
+    patchState(this.playerState, {
+      userIsActive: true,
+      showControls: true,
+      hideUIOverlays: false
+    });
   }
 
   ngOnInit(): void {
-     // Watch the manuallyToggled input and update isVisible accordingly
+     // Watch the manuallyToggled input and user activity state to coordinate visibility
      effect(() => {
        if (this.manuallyToggled()) {
+         // Manual toggle takes precedence
          this.isVisible.set(true);
+       } else if (this.playerState.hideUIOverlays()) {
+         // Hide when UI overlays are hidden through inactivity
+         this.isVisible.set(false);
        } else {
-         // Reset to mouse position based visibility
+         // When active, check mouse position for channel rail display
          const threshold = window.innerHeight - 150;
          this.isVisible.set(this.mousePosition().y > threshold);
        }
      });
      
-     // Handle mouse movement
+     // Track mouse position for channel rail hover detection
      fromEvent<MouseEvent>(window, 'mousemove')
      .pipe(takeUntilDestroyed(this.destroyRef))
      .subscribe((e) => {
        this.mousePosition.set({ x: e.clientX, y: e.clientY });
        
-       // Only automatically show/hide if not manually toggled externally
-       if (!this.manuallyToggled()) {
+       // When user is active and rail isn't manually toggled
+       if (!this.manuallyToggled() && this.playerState.userIsActive()) {
          // Show rail when mouse is near bottom of screen
          const threshold = window.innerHeight - 150;
-         this.isVisible.set(e.clientY > threshold);
+         if (e.clientY > threshold) {
+           this.isVisible.set(true);
+           
+           // Update user activity state
+           patchState(this.playerState, {
+             userIsActive: true,
+             showControls: true,
+             hideUIOverlays: false
+           });
+         } else {
+           this.isVisible.set(false);
+         }
        }
      });
-
-     // Handle touch events
-     fromEvent(window, 'touchstart')
-       .pipe(takeUntilDestroyed(this.destroyRef))
-       .subscribe(() => {
-         // Only automatically show if not manually toggled externally
-         if (!this.manuallyToggled()) {
-           this.isVisible.set(true);
-         }
-       });
-
-     fromEvent(window, 'touchend')
-       .pipe(takeUntilDestroyed(this.destroyRef))
-       .subscribe(() => {
-         // Only automatically hide if not manually toggled externally
-         if (!this.manuallyToggled()) {
-           // Add delay before hiding on touch to allow for interaction
-           setTimeout(() => this.isVisible.set(false), 2000);
-         }
-       });
     }
 }

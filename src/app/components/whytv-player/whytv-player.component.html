@@ -1,0 +1,42 @@
+<youtube-player
+  #player
+  [videoId]="videoId()"
+  [height]="windowHeight()"
+  [width]="windowWidth()"
+  [playerVars]="playerVars"
+  (ready)="onPlayerReady($event)"
+  (stateChange)="onStateChange($event)"
+>
+</youtube-player>
+
+<div class="player-controls">
+  <button (click)="playVideo()">Play</button>
+  <button (click)="pauseVideo()">Pause</button>
+  <button (click)="stopVideo()">Stop</button>
+  <input
+    type="range"
+    min="0"
+    max="100"
+    [value]="currentTime"
+    (input)="seekToPosition($event)"
+  />
+  <span>{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+  <div class="volume-control">
+    <button (click)="toggleMute()">
+      {{ isMuted ? "Unmute" : "Mute" }}
+    </button>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      [value]="volume"
+      (input)="setVolume($event)"
+    />
+  </div>
+  <select (change)="setPlaybackRate($event)">
+    <option *ngFor="let rate of availableRates" [value]="rate">
+      {{ rate }}
+    </option>
+  </select>
+  <button (click)="requestFullscreen()">Fullscreen</button>
+</div>

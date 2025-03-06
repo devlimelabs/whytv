@@ -64,6 +64,33 @@
       ></textarea>
       <label for="in_label">What would you like to watch?</label>
     </p-floatlabel>
+
+    <!-- Provider selection -->
+    <div class="p-field">
+      <label for="provider" class="block text-sm mb-1">AI Provider</label>
+      <p-dropdown
+        id="provider"
+        [options]="providers"
+        [(ngModel)]="selectedProvider"
+        (onChange)="onProviderChange()"
+        optionLabel="name"
+        optionValue="value"
+        [style]="{'width':'100%'}"
+      ></p-dropdown>
+    </div>
+
+    <!-- Model selection -->
+    <div class="p-field">
+      <label for="model" class="block text-sm mb-1">AI Model</label>
+      <p-dropdown
+        id="model"
+        [options]="filteredModels()"
+        [(ngModel)]="selectedModel"
+        optionLabel="name"
+        optionValue="value"
+        [style]="{'width':'100%'}"
+      ></p-dropdown>
+    </div>
   </div>
 
   <div class="flex justify-end gap-4">

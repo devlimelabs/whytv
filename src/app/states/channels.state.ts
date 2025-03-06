@@ -1,8 +1,9 @@
 import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { Router } from '@angular/router';
+import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import { FirestoreService } from '../services/firestore.service';
-import { Channel, Video } from './video-player.state';
+import { Channel } from './video-player.state';
 
 /**
  * Interface for the channels state
@@ -34,19 +35,19 @@ export const channelsStore = signalStore(
     currentVideo: computed(() => {
       const channel = state.currentChannel();
       const index = state.currentVideoIndex();
-      
+
       if (!channel || !channel.videos || !channel.videos.length) {
         return null;
       }
-      
+
       return channel.videos[index];
     }),
-    
+
     /**
      * Get the total number of channels
      */
     channelCount: computed(() => state.channels().length),
-    
+
     /**
      * Get the total number of videos in the current channel
      */
@@ -57,7 +58,7 @@ export const channelsStore = signalStore(
       }
       return channel.videos.length;
     }),
-    
+
     /**
      * Get whether there is a next video in the current channel
      */
@@ -66,7 +67,7 @@ export const channelsStore = signalStore(
       const count = channel?.videos?.length || 0;
       return count > 0 && state.currentVideoIndex() < count - 1;
     }),
-    
+
     /**
      * Get whether there is a previous video in the current channel
      */
@@ -74,16 +75,16 @@ export const channelsStore = signalStore(
       return state.currentVideoIndex() > 0;
     })
   })),
-  withMethods((store, firestoreService = inject(FirestoreService)) => ({
+  withMethods((store, firestoreService = inject(FirestoreService), router = inject(Router)) => ({
     /**
      * Load all available channels from Firestore
      */
     async loadChannels() {
       patchState(store, { isLoading: true, error: null });
-      
+
       try {
         const channels = await firestoreService.getChannels();
-        
+
         if (channels.length > 0) {
           patchState(store, {
             channels,
@@ -105,7 +106,7 @@ export const channelsStore = signalStore(
         });
       }
     },
-    
+
     /**
      * Set the active channel
      */
@@ -115,20 +116,21 @@ export const channelsStore = signalStore(
         currentVideoIndex: 0
       });
     },
-    
+
     /**
      * Set the current video index
      */
     setCurrentVideoIndex(index: number) {
       const channel = store.currentChannel();
       const count = channel?.videos?.length || 0;
-      
       // Validate index to make sure it's within bounds
       if (count > 0 && index >= 0 && index < count) {
-        patchState(store, { currentVideoIndex: index });
+        patchState(store, {
+          currentVideoIndex: index
+        });
       }
     },
-    
+
     /**
      * Go to the next video in the current channel
      * @returns true if successful, false if at the end
@@ -137,30 +139,30 @@ export const channelsStore = signalStore(
       const channel = store.currentChannel();
       const index = store.currentVideoIndex();
       const count = channel?.videos?.length || 0;
-      
+
       if (count > 0 && index < count - 1) {
         patchState(store, { currentVideoIndex: index + 1 });
         return true;
       }
-      
+
       return false;
     },
-    
+
     /**
      * Go to the previous video in the current channel
      * @returns true if successful, false if at the beginning
      */
     previousVideo(): boolean {
       const index = store.currentVideoIndex();
-      
+
       if (index > 0) {
         patchState(store, { currentVideoIndex: index - 1 });
         return true;
       }
-      
+
       return false;
     },
-    
+
     /**
      * Set mock channels for fallback or testing
      */
@@ -173,6 +175,13 @@ export const channelsStore = signalStore(
           isLoading: false
         });
       }
+    }
+  })),
+  withHooks((store) => ({
+    onInit() {
+      store.loadChannels();
+      store.setCurrentChannel(store.channels()[0]);
+      store.setCurrentVideoIndex(0);
     }
   }))
 );

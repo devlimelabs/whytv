@@ -1,5 +1,9 @@
-import { computed } from '@angular/core';
-import { signalStore, withComputed, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { patchState, signalStore, withComputed, withHooks, withState } from '@ngrx/signals';
+import { startWith } from 'rxjs';
+
+import { InactivityService } from '../services/inactivity/inactivity.service';
 
 
 type VideoPlayerState = {
@@ -14,6 +18,7 @@ type VideoPlayerState = {
   loading: boolean;
   error: string | null;
   currentChannel: Channel | null;
+  userIsActive: boolean;
 };
 
 export const videoPlayerState = signalStore(
@@ -29,6 +34,7 @@ export const videoPlayerState = signalStore(
     liked: false,
     showControls: true,
     hideUIOverlays: false,
+    userIsActive: true,
     progress: 0,
     loading: false,
     error: null,
@@ -36,6 +42,15 @@ export const videoPlayerState = signalStore(
   }),
   withComputed((state) => ({
     playPauseLabel: computed(() => state.playing() ? 'Pause' : 'Play')
+  })),
+  withHooks((state) => ({
+    onInit: () => {
+      inject(InactivityService).getInactivityTimeout(2500)
+      .pipe(takeUntilDestroyed(), startWith(true))
+      .subscribe(active => {
+        patchState(state, { userIsActive: active, hideUIOverlays: !active, showControls: active });
+      });
+    }
   }))
 );
 

@@ -1,0 +1,22 @@
+<div
+  class="relative flex flex-col items-center justify-center min-h-screen w-full overflow-hidden dark-mode"
+>
+  <div id="main-container" class="flex f-col h-screen w-full">
+    <router-outlet></router-outlet>
+  </div>
+
+  <app-channel-carousel
+    class="absolute bottom-0 left-[100px] z-[9999] w-[calc(100vw-200px)]"
+  >
+  </app-channel-carousel>
+
+  <p-speeddial
+    [model]="items"
+    [transitionDelay]="80"
+    [radius]="120"
+    direction="up"
+    class="absolute bottom-0 right-0 z-[9999] animate-bounce"
+    [buttonProps]="{ severity: 'help', rounded: true }"
+    [tooltipOptions]="{ tooltipPosition: 'left' }"
+  ></p-speeddial>
+</div>

@@ -1,10 +1,19 @@
-<div class="relative w-full h-full bg-black" (click)="handleTap($event)" [ngClass]="carouselVisible() ? 'carousel-visible' : 'carousel-hidden'">
+<div
+  class="relative w-full h-full bg-black"
+  (click)="handleTap($event)"
+  [ngClass]="carouselVisible() ? 'carousel-visible' : 'carousel-hidden'"
+>
   <!-- Video Thumbnail - Shown before player is ready -->
   @if (videoId() && videoId().length > 0 && !playerReady()) {
   <div class="absolute inset-0 z-0 bg-black">
-    <img 
-      *ngIf="state.video()?.thumbnails?.high || state.video()?.thumbnails?.medium"
-      [src]="state.video()?.thumbnails?.high?.url || state.video()?.thumbnails?.medium?.url"
+    <img
+      *ngIf="
+        state.video()?.thumbnails?.high || state.video()?.thumbnails?.medium
+      "
+      [src]="
+        state.video()?.thumbnails?.high?.url ||
+        state.video()?.thumbnails?.medium?.url
+      "
       alt="Video thumbnail"
       class="w-full h-full object-contain"
     />
@@ -12,7 +21,16 @@
   }
 
   <!-- YouTube Player Container - Absolute position to ensure always visible -->
-  <div class="absolute inset-0 z-5 youtube-container" style="pointer-events: auto; background: transparent; width: 100%; height: 100%; overflow: hidden;">
+  <div
+    class="absolute inset-0 z-5 youtube-container"
+    style="
+      pointer-events: auto;
+      background: transparent;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    "
+  >
     @if (videoId() && videoId().length > 0) {
     <youtube-player
       #youtubePlayer
@@ -26,25 +44,35 @@
         enablejsapi: 1,
         mute: 1,
         fs: 1,
-        modestbranding: 1,
         rel: 0,
+        showinfo: 0,
         playsinline: 1,
         iv_load_policy: 3
       }"
-      showBeforeIframeApiLoads
       [loadApi]="true"
       (ready)="onPlayerReady($event)"
+      (apiChange)="onApiChange($event)"
       (stateChange)="onStateChange($event)"
       (error)="onError($event)"
       class="youtube-player"
-      style="display: block; position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 10;"
+      style="
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 10;
+      "
     ></youtube-player>
     }
   </div>
 
   <!-- Loading Indicator -->
   @if (isLoading()) {
-  <div class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+  <div
+    class="absolute inset-0 flex items-center justify-center bg-black/50 z-10"
+  >
     <div
       class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
     ></div>
@@ -53,7 +81,9 @@
 
   <!-- Error Message -->
   @if (error()) {
-  <div class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+  <div
+    class="absolute inset-0 flex items-center justify-center bg-black/50 z-10"
+  >
     <div class="bg-red-500/90 text-white px-4 py-2 rounded-lg shadow-lg">
       {{ error() }}
     </div>
@@ -87,8 +117,8 @@
 
   <!-- Play/Pause Button (completely separate from other controls) -->
   <div
-    class="absolute inset-0 flex items-center justify-center transition-all z-20 duration-300"
-    [ngClass]="showPlayPauseButton() ? 'opacity-100' : 'opacity-0'"
+    class="absolute inset-0 flex items-center justify-center z-20 play-pause-button"
+    [ngClass]="{ hidden: !showPlayPauseButton() }"
   >
     <button
       class="w-16 h-16 bg-black/30 rounded-full flex items-center justify-center transition-transform hover:scale-125 hover:bg-black/50 cursor-pointer"
@@ -126,7 +156,7 @@
     />
 
     <!-- Video Carousel -->
-    <app-video-carousel 
+    <app-video-carousel
       [visible]="carouselVisible()"
       (toggleVisibility)="toggleVideoCarousel()"
     ></app-video-carousel>
