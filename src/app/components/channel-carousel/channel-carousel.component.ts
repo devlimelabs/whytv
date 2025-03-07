@@ -1,5 +1,5 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { ChevronLeft, ChevronRight, LucideAngularModule } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
@@ -16,14 +16,15 @@ import { Channel, videoPlayerState } from '../../states/video-player.state';
   imports: [
     ButtonModule,
     CardModule,
-    CarouselModule,
     CommonModule,
     LucideAngularModule,
+    CarouselModule,
     NgOptimizedImage
   ],
   templateUrl: './channel-carousel.component.html',
   styleUrls: ['./channel-carousel.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class ChannelCarouselComponent {
   // Inject the stores

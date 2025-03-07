@@ -5,11 +5,12 @@
     <router-outlet></router-outlet>
   </div>
 
-  <app-channel-carousel
+  @if (state.videoCarouselVisible()) {
+  <whytv-channel-carousel
+    [data]="channelsState.channels()"
     class="absolute bottom-0 left-[100px] z-[9999] w-[calc(100vw-200px)]"
-  >
-  </app-channel-carousel>
-
+  />
+  }
   <p-speeddial
     [model]="items"
     [transitionDelay]="80"

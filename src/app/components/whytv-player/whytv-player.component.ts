@@ -39,7 +39,8 @@ export class WhytvPlayerComponent implements AfterViewInit {
 
   youtubePlayer = viewChild<YouTubePlayer>('player');
 
-  videoId = input('dQw4w9WgXcQ');
+  // videoId = input('dQw4w9WgXcQ');
+  videoId = input<string>();
 
 
   playerVars = {

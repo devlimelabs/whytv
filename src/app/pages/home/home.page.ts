@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { patchState, signalState } from '@ngrx/signals';
 import {
@@ -19,19 +20,20 @@ import {
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SpeedDialModule } from 'primeng/speeddial';
+import { BehaviorSubject, Subscription, timer } from 'rxjs';
 
-import { ChannelCarouselComponent } from '../../components/channel-carousel/channel-carousel.component';
+import { WhyTvChannelCarouselComponent } from '../../custom-carousel/carousel.component';
+import { channelsStore } from '../../states/channels.state';
 import { videoPlayerState } from '../../states/video-player.state';
 
 @Component({
   imports: [
     CommonModule,
-    ChannelCarouselComponent,
     SpeedDialModule,
     ButtonModule,
     RouterOutlet,
     LucideAngularModule,
-    ChannelCarouselComponent
+    WhyTvChannelCarouselComponent
 ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.css',
@@ -39,6 +41,22 @@ import { videoPlayerState } from '../../states/video-player.state';
 })
 export class HomePage implements OnInit {
   readonly playerState = inject(videoPlayerState);
+  readonly channelsState = inject(channelsStore);
+  #userActive = new BehaviorSubject<boolean>(true);
+  readonly userActive$ = this.#userActive.asObservable();
+  userActivitySub!: Subscription;
+  readonly destroyRef = inject(DestroyRef);
+
+  @HostListener('mousemove', ['$event'])
+  @HostListener('click', ['$event'])
+  @HostListener('touchstart', ['$event'])
+  userActivityHandler(event: any) {
+    this.markUserActive();
+    patchState(this.state, {
+      videoCarouselVisible: true
+    });
+  }
+
 
   state = signalState({
     videoCarouselVisible: false,
@@ -119,6 +137,22 @@ export class HomePage implements OnInit {
       showControls: true,
       hideUIOverlays: false
     });
+
+    if (this.userActivitySub) {
+      this.userActivitySub.unsubscribe();
+    }
+
+
+    this.userActivitySub = timer(0, 2000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        patchState(this.playerState, {
+          userIsActive: true,
+          showControls: true,
+          hideUIOverlays: false
+        });
+      });
+
   }
 
   toggleVideoCarousel(event: any) {

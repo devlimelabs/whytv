@@ -9,11 +9,10 @@
   styleClass="w-full rounded-lg bg-black/20 backdrop-blur-lg pt-4 px-4"
   [value]="channels"
   [numVisible]="5"
-  [autoplayInterval]="5000"
   [numScroll]="1"
   [circular]="true"
   [responsiveOptions]="responsiveOptions"
-  [showNavigators]="false"
+  [showNavigators]="true"
   [showIndicators]="true"
 >
   <ng-template let-channel pTemplate="item">

@@ -1,6 +1,9 @@
-import { computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { computed, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
+import { find, findIndex } from 'lodash';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 
 import { FirestoreService } from '../services/firestore.service';
 import { Channel } from './video-player.state';
@@ -80,10 +83,11 @@ export const channelsStore = signalStore(
      * Load all available channels from Firestore
      */
     async loadChannels() {
+      let channels: Channel[] = [];
       patchState(store, { isLoading: true, error: null });
 
       try {
-        const channels = await firestoreService.getChannels();
+        channels = await firestoreService.getChannels();
 
         if (channels.length > 0) {
           patchState(store, {
@@ -105,6 +109,8 @@ export const channelsStore = signalStore(
           error: 'Failed to load channels'
         });
       }
+
+      return channels;
     },
 
     /**
@@ -112,8 +118,7 @@ export const channelsStore = signalStore(
      */
     setCurrentChannel(channel: Channel) {
       patchState(store, {
-        currentChannel: channel,
-        currentVideoIndex: 0
+        currentChannel: channel
       });
     },
 
@@ -177,11 +182,35 @@ export const channelsStore = signalStore(
       }
     }
   })),
-  withHooks((store) => ({
-    onInit() {
-      store.loadChannels();
-      store.setCurrentChannel(store.channels()[0]);
-      store.setCurrentVideoIndex(0);
+  withHooks((store, route = inject(ActivatedRoute), router = inject(Router), destroyRef = inject(DestroyRef)) => ({
+    async onInit() {
+      await store.loadChannels();
+
+     route.queryParams
+        .pipe(
+          takeUntilDestroyed(destroyRef),
+          map(({ channelId }) => channelId),
+          distinctUntilChanged()
+        )
+        .subscribe((channelId) => {
+          const currentChannel = find(store.channels(), { id: channelId });
+          if (currentChannel) {
+            store.setCurrentChannel(currentChannel);
+            store.setCurrentVideoIndex(0);
+          }
+        });
+
+      route.queryParams
+        .pipe(
+          takeUntilDestroyed(destroyRef),
+          map(({ videoId }) => videoId),
+          distinctUntilChanged()
+        )
+        .subscribe((videoId) => {
+          store.setCurrentVideoIndex(findIndex(store.currentChannel()?.videos, { youtubeId: videoId }));
+        });
+
+      router.navigate([], { queryParams: { channelId: store.channels()?.[0]?.id, videoId: store.currentVideo()?.youtubeId } });
     }
   }))
 );

@@ -1,0 +1,44 @@
+<!-- video-carousel.component.html -->
+<div class="carousel-container">
+  <div class="scene">
+    <div #carousel class="carousel" [class.carousel--vertical]="orientation === 'vertical'">
+      <div 
+        *ngFor="let channel of channels; let i = index" 
+        class="carousel__cell"
+        [class.active]="isCurrentChannel(channel)"
+        (click)="selectChannel(channel, i)"
+      >
+        <div class="carousel__card">
+          <div class="card-header">
+            <img
+              [alt]="channel?.videos?.[0]?.thumbnails?.medium?.alt"
+              class="w-full object-cover object-center"
+              [src]="channel?.videos?.[0]?.thumbnails?.medium?.url"
+            />
+          </div>
+          <div class="card-content">
+            <div class="card-title">
+              <span class="title-text">{{ channel.name }}</span>
+            </div>
+            <div class="card-subtitle">
+              <span class="subtitle-text">{{ channel.videos.length }} videos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="carousel-controls">
+    <button class="carousel-button previous" (click)="previous()" aria-label="Previous channel">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <button class="carousel-button next" (click)="next()" aria-label="Next channel">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  </div>
+</div>
