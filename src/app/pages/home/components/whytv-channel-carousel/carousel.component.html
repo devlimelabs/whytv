@@ -19,14 +19,14 @@
     <div class="carousel" #carousel>
       @for (channel of channelsState.channels(); track channel.id;) {
       <div
-        class="carousel__channel group cursor-pointer"
+        class="carousel__channel group cursor-pointer rounded"
         #carouselChannel
         [class.selected]="channel.id === channelId()"
         [style.background-image]="'url(' + (channel?.videos?.[0]?.thumbnails?.medium?.url || '') + ')'"
         (click)="loadChannel(channel)"
       >
         <div
-          class="invisible group-hover:visible channel-content bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
+          class="invisible group-hover:visible backdrop-blur-lg backdrop-brightness-50 h-full flex flex-col items-center justify-center channel-content bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent p-2"
         >
           <h3 class="channel-title text-2xl font-bold">{{ channel.name }}</h3>
           <p class="channel-videos text-white">
