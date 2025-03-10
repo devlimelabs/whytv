@@ -1,4 +1,4 @@
-import { ApplicationConfig, inject, provideAppInitializer, provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideAppInitializer, provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -10,16 +10,16 @@ import { providePrimeNG } from 'primeng/config';
 import { environment } from '../environments/environment';
 import WhyTvTheme from '../whytv.theme';
 import { routes } from './app.routes';
-import { InactivityService } from './services/inactivity/inactivity.service';
+import { loadChannels } from './services/channel/channel.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideExperimentalZonelessChangeDetection(),
+    provideAnimationsAsync(),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
-    provideRouter(routes, withRouterConfig({ defaultQueryParamsHandling: 'replace', paramsInheritanceStrategy: 'always' }), withComponentInputBinding(), withViewTransitions()),
+    provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' }), withComponentInputBinding(), withViewTransitions()),
     provideClientHydration(),
-    provideAnimationsAsync(),
     providePrimeNG({
       theme: {
         preset: WhyTvTheme,
@@ -36,6 +36,6 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     MessageService,
-    provideAppInitializer(() => inject(InactivityService).startWatch())
+    provideAppInitializer(loadChannels)
   ]
 };

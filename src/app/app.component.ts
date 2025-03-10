@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
-import { patchState } from '@ngrx/signals';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
@@ -20,13 +19,10 @@ import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 
-import { ChannelCarouselComponent } from './components/channel-carousel/channel-carousel.component';
-import { ChannelRailComponent } from './components/channel-rail/channel-rail.component';
-import { GoogleYoutubePlayerComponent } from './components/google-youtube-player/google-youtube-player.component';
-import { VideoCarouselComponent } from './components/video-carousel/video-carousel.component';
+import { AI_MODELS, AI_PROVIDERS } from './constants/provider-models.const';
 import { ChannelService } from './services/channel/channel.service';
-import { activeChannelStore } from './states/active-channel.state';
-import { channelsStore } from './states/channels.state';
+import { VideoPlayerService } from './services/video-player.service';
+import { ChannelsState } from './states/channels.state';
 import { Channel, videoPlayerState } from './states/video-player.state';
 
 // Channel Picker removed in favor of side-actions button
@@ -40,26 +36,24 @@ import { Channel, videoPlayerState } from './states/video-player.state';
     CommonModule,
     CarouselModule,
     ToastModule,
-    GoogleYoutubePlayerComponent,
-    ChannelCarouselComponent,
-    VideoCarouselComponent,
     DialogModule,
     ButtonModule,
     FormsModule,
-    SelectModule,
-    ChannelRailComponent
+    SelectModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MessageService]
 })
 export class AppComponent implements OnInit {
-  constructor(
-    private messageService: MessageService,
-    private channelService: ChannelService
-  ) {
+  private messageSvc = inject(MessageService);
+  private channelSvc = inject(ChannelService);
 
-
-    effect(() => {
+  // State stores
+  readonly channelsState = inject(ChannelsState);
+  readonly playerState = inject(videoPlayerState);
+  readonly videoPlayerSvc = inject(VideoPlayerService);
+  constructor() {
+   effect(() => {
       try {
         localStorage.setItem('whytv_provider', this.selectedProvider());
         localStorage.setItem('whytv_model', this.selectedModel());
@@ -67,32 +61,7 @@ export class AppComponent implements OnInit {
         console.error('Error saving model preferences to localStorage:', error);
       }
     });
-    // Update Video Player State when active video changes
-    effect(() => {
-      const activeVideo = this.activeChannelState.activeVideo();
-      if (activeVideo) {
-        patchState(this.playerState, {
-          video: activeVideo,
-          progress: 0
-        });
-      }
-    });
-
-    // Update Video Player State when active channel changes
-    effect(() => {
-      const activeChannel = this.channelsState.currentChannel();
-      if (activeChannel) {
-        patchState(this.playerState, {
-          currentChannel: activeChannel
-        });
-      }
-    });
   }
-
-  // State stores
-  readonly channelsState = inject(channelsStore);
-  readonly activeChannelState = inject(activeChannelStore);
-  readonly playerState = inject(videoPlayerState);
 
   // Local UI signals
   isPlaying = signal<boolean>(true);
@@ -109,36 +78,10 @@ export class AppComponent implements OnInit {
   channelDescription = model('');
 
   // AI Provider and Model settings
-  providerOptions = [
-    { name: 'OpenAI', value: 'openai' },
-    { name: 'Anthropic', value: 'anthropic' },
-    { name: 'Google AI', value: 'google' }
-  ];
+  providerOptions = AI_PROVIDERS;
 
   // Available models by provider
-  modelOptions = {
-    openai: [
-      { name: 'GPT-4o', value: 'gpt-4o' },
-      { name: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
-      { name: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
-      { name: 'GPT-4o Mini', value: 'gpt-4o-mini' },
-      { name: 'o1 Mini', value: 'o1-mini' },
-    ],
-    anthropic: [
-      { name: 'Claude 3.7 Sonnet', value: 'claude-3.7-sonnet' },
-      { name: 'Claude 3.5 Sonnet', value: 'claude-3.5-sonnet' },
-      { name: 'Claude 3 Opus', value: 'claude-3-opus' },
-      { name: 'Claude 3 Sonnet', value: 'claude-3-sonnet' },
-      { name: 'Claude 3.5 Haiku', value: 'claude-3.5-haiku' },
-      { name: 'Claude 3 Haiku', value: 'claude-3-haiku' },
-    ],
-    google: [
-      { name: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
-      { name: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
-      { name: 'Gemini 1.0 Pro', value: 'gemini-1.0-pro' },
-      { name: 'Gemini 1.0 Flash', value: 'gemini-1.0-flash' }
-    ]
-  };
+  modelOptions = AI_MODELS;
 
   selectedProvider = model('openai'); // Default provider
   selectedModel = model('gpt-4o'); // Default model
@@ -190,11 +133,11 @@ export class AppComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     // Load channels from store, which will fetch from Firestore
     try {
-      await this.channelsState.loadChannels();
+      await this.channelSvc.loadChannels();
 
       // If there are no channels, use mock data as fallback
       if (this.channelsState.channelCount() === 0) {
-        this.messageService.add({
+        this.messageSvc.add({
           severity: 'warn',
           summary: 'No Channels',
           detail: 'No live channels found, using mock data',
@@ -202,7 +145,7 @@ export class AppComponent implements OnInit {
         });
         this.channelsState.setMockChannels(this.mockChannels);
       } else {
-        this.messageService.add({
+        this.messageSvc.add({
           severity: 'success',
           summary: 'Channels Loaded',
           detail: `${this.channelsState.channelCount()} channels loaded`,
@@ -211,7 +154,7 @@ export class AppComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error loading channels:', error);
-      this.messageService.add({
+      this.messageSvc.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Failed to load channels. Using mock data instead.',
@@ -301,11 +244,10 @@ export class AppComponent implements OnInit {
   }
 
   handleChannelSelect(channel: Channel): void {
-    this.channelsState.setCurrentChannel(channel);
-    this.activeChannelState.resetForNewChannel();
+    this.channelSvc.setCurrentChannel(channel);
 
     // Show toast when channel changes
-    this.messageService.add({
+    this.messageSvc.add({
       severity: 'success',
       summary: 'Channel Changed',
       detail: `Now watching: ${channel.name}`,
@@ -319,11 +261,11 @@ export class AppComponent implements OnInit {
 
   handleVideoEnded(): void {
     // Auto-advance to the next video using the store
-    this.activeChannelState.nextVideo();
+    this.channelSvc.nextVideo();
   }
 
   handleVideoError(error: string): void {
-    this.messageService.add({
+    this.messageSvc.add({
       severity: 'error',
       summary: 'Video Error',
       detail: error,
@@ -332,26 +274,13 @@ export class AppComponent implements OnInit {
     });
   }
 
-  handleNextVideo(): void {
-    this.activeChannelState.nextVideo();
-
-    const currentVideo = this.activeChannelState.activeVideo();
-    if (currentVideo) {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Next Video',
-        detail: `Now playing: ${currentVideo.title}`,
-        life: 2000
-      });
-    }
-  }
 
   handlePreviousVideo(): void {
-    this.activeChannelState.previousVideo();
+    this.channelSvc.previousVideo();
 
-    const currentVideo = this.activeChannelState.activeVideo();
+    const currentVideo = this.channelsState.currentChannel()?.videos[this.channelsState.currentVideoIndex()];
     if (currentVideo) {
-      this.messageService.add({
+      this.messageSvc.add({
         severity: 'info',
         summary: 'Previous Video',
         detail: `Now playing: ${currentVideo.title}`,
@@ -365,18 +294,6 @@ export class AppComponent implements OnInit {
     this.showControls.set(isVisible);
   }
 
-  /**
-   * Toggle between old and new player implementations
-   */
-  togglePlayerImplementation(): void {
-    this.useNewPlayer.set(!this.useNewPlayer());
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Player Switched',
-      detail: `Now using ${this.useNewPlayer() ? 'new Google' : 'custom'} YouTube player`,
-      life: 3000
-    });
-  }
 
   // Handle create channel button click from side-actions
   handleCreateChannel(): void {
@@ -386,7 +303,7 @@ export class AppComponent implements OnInit {
   // Create a new channel
   async createChannel(): Promise<void> {
     if (!this.channelDescription() || this.channelDescription().trim().length === 0) {
-      this.messageService.add({
+      this.messageSvc.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Please enter a channel description',
@@ -396,7 +313,7 @@ export class AppComponent implements OnInit {
     }
 
     // Create channel with selected provider and model
-    await this.channelService.createChannel(
+    await this.channelSvc.createChannel(
       this.channelDescription(),
       this.selectedProvider(),
       this.selectedModel()
@@ -420,13 +337,5 @@ export class AppComponent implements OnInit {
   // Toggle the channel rail visibility
   toggleChannelRail(): void {
     this.channelRailVisible.update(visible => !visible);
-
-    // Notify user when channel rail is toggled
-    this.messageService.add({
-      severity: 'info',
-      summary: this.channelRailVisible() ? 'Channels Shown' : 'Channels Hidden',
-      detail: this.channelRailVisible() ? 'Channel rail is now visible' : 'Channel rail is now hidden',
-      life: 1500
-    });
   }
 }

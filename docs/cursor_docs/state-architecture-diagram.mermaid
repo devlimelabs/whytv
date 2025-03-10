@@ -1,0 +1,74 @@
+flowchart TB
+
+    subgraph "Component Layer"
+        Comp1["User Components"]
+        Comp2["Channel Components"]
+        Comp3["Video Components"]
+        Comp4["VideoPlayerComponent"]
+    end
+
+
+    subgraph "Service Layer"
+        Service1["UserStateService"]
+        Service2["ChannelStateService"]
+        Service3["VideoStateService"]
+        Service4["PlayerStateService"]
+    end
+
+
+    subgraph "Video Watching Application"
+        subgraph "Global State Layer"
+            Store1["User Store\n(@ngrx/signals)"]
+            Store2["Channel Store\n(@ngrx/signals)"]
+            Store3["Video Store\n(@ngrx/signals)"]
+            Store4["Player Store\n(@ngrx/signals)"]
+
+            StoreSignals1["User Signals"]
+            StoreSignals2["Channel Signals"]
+            StoreSignals3["Video Signals"]
+            StoreSignals4["Player Signals"]
+
+            Store1 <--> StoreSignals1
+            Store2 <--> StoreSignals2
+            Store3 <--> StoreSignals3
+            Store4 <--> StoreSignals4
+        end
+    end
+
+    %% Standard Flow - Read operations (Store Signals to Components)
+    StoreSignals1 --> Comp1
+    StoreSignals2 --> Comp2
+    StoreSignals3 --> Comp3
+    StoreSignals4 --> Comp4
+
+    %% Standard Flow - Write operations (Component to Service to Store)
+    Comp1 -- "1. Dispatch Action" --> Service1
+    Comp2 -- "1. Dispatch Action" --> Service2
+    Comp3 -- "1. Dispatch Action" --> Service3
+
+    Service1 -- "2. Update State" --> Store1
+    Service2 -- "2. Update State" --> Store2
+    Service3 -- "2. Update State" --> Store3
+
+    %% Cross-Domain Integration
+    StoreSignals1 -.-> Store3
+    StoreSignals2 -.-> Store3
+    StoreSignals3 -.-> Store4
+
+    %% Special Player Flow - Two-way communication
+    Comp4 -- "1. Dispatch Action" --> Service4
+    Service4 -- "2. Update State" --> Store4
+    Comp4 -- "BehaviorSubjects\nfor player controls" --> Service4
+    Comp4 -- "Direct state\nupdates" --> Store4
+
+
+    %% Style nodes
+    classDef store fill:#f9f,stroke:#333,stroke-width:2px
+    classDef signal fill:#bbf,stroke:#333,stroke-width:2px
+    classDef service fill:#fdd,stroke:#333,stroke-width:2px
+    classDef component fill:#dfd,stroke:#333,stroke-width:2px
+
+    class Store1,Store2,Store3,Store4 store
+    class StoreSignals1,StoreSignals2,StoreSignals3,StoreSignals4 signal
+    class Service1,Service2,Service3,Service4 service
+    class Comp1,Comp2,Comp3,Comp4 component

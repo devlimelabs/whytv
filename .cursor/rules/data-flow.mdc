@@ -1,0 +1,20 @@
+---
+description: How to implement data flow for retrieving, setting, and sharing stateful data. how to structure stores, services, and component responsibilties
+globs: src/app/**/*.{ts,html}
+alwaysApply: false
+---
+
+# Handling State & Data Flow
+
+- Use the diagram of the state architecture in  [state-architecture-diagram.mermaid](mdc:docs/cursor_docs/state-architecture-diagram.mermaid) as the law for data flow in the app. which in a nutshell is:  
+  - Components read data from store/state(s)
+  - Components update store via service
+  - service is the only thing udpating store/state
+- use [state-flow-architecture.md](mdc:docs/cursor_docs/state-flow-architecture.md) for more detailed and specific information on the different stores and services
+- this reactive state pattern keeps application updates flowing in one direction, and maintain state immutability, keeping code simple and maintainable
+- AVOID ANGULAR EFFECTS! For handling cross component events use rxjs through the service
+- more information on ngrx/signals in [index.md](mdc:docs/ngrx_signals/signal-store/index.md), [lifecycle-hooks.md](mdc:docs/ngrx_signals/signal-store/lifecycle-hooks.md), [state-tracking.md](mdc:docs/ngrx_signals/signal-store/state-tracking.md), [signal-state.md](mdc:docs/ngrx_signals/signal-state.md), [deep-computed.md](mdc:docs/ngrx_signals/deep-computed.md)
+
+
+## Player Store, Service, & Component
+- The [whytv-player.component.ts](mdc:src/app/components/whytv-player/whytv-player.component.ts) uses an elementRef of the video player and handles calling player methods (like play, pause, etc), and it recieve event data from the player. In order to facilitate allowing the player to handle that part of the data, any request to execute play, pause, or one of those methods should go through the player service Which will trigger an RxJS subject which the player component will be subscribed to, and when it gets events, it will trigger the corresponding methods.Player itself will then emit an event. Within the event is a code, and based on the code, we will then trigger a state update directly or store an update directly, updating the relevant statuses or information on the player so that the status always matches the true state coming from the youtube player elementRef. This again keeps all data flowing in one direction.

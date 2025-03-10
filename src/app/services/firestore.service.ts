@@ -1,8 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { collection, doc, Firestore, getDoc, getDocs, onSnapshot, query, where } from '@angular/fire/firestore';
-import get from 'lodash/get';
 import sortBy from 'lodash/sortBy';
-import { Observable, from, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 import { Channel, Video } from '../states/video-player.state';
 
@@ -24,7 +23,7 @@ export interface ChannelStatusUpdate {
 })
 export class FirestoreService {
   private firestore = inject(Firestore);
-  
+
   // Subject for channel status updates
   private channelStatusSubject = new Subject<ChannelStatusUpdate>();
   public channelStatus$ = this.channelStatusSubject.asObservable();
@@ -56,7 +55,7 @@ export class FirestoreService {
       );
 
       // Filter out channels with no videos
-      return channelsWithVideos.filter(channel => channel.videos.length > 0);
+      return channelsWithVideos;
     } catch (error) {
       console.error('Error fetching channels:', error);
       throw error;
@@ -96,52 +95,19 @@ export class FirestoreService {
    * Fetches videos for a specific channel
    */
   private async getChannelVideos(channelId: string): Promise<Video[]> {
-    const videosRef = collection(this.firestore, `channels/${channelId}/videos`);
+    const videosRef = query(collection(this.firestore, `channels/${channelId}/videos`), where('deleted', '!=', true));
     const videosSnapshot = await getDocs(videosRef);
 
     const videos: Video[] = [];
 
     videosSnapshot.forEach((videoDoc) => {
-      const videoData = videoDoc.data() as any;
-
-      // Only include videos that aren't deleted and have a YouTube ID
-      if (videoData.deleted || !videoData.youtubeId) return;
-
-      const video: Video = {
-        title: videoData.title || 'Untitled Video',
-        description: videoData.description || '',
-        channelTitle: videoData.channelTitle || '',
-        publishedAt: videoData.publishedAt || new Date().toISOString(),
-        youtubeId: videoData.youtubeId,
-        deleted: videoData.deleted || false,
-        order: videoData.order || 999,
-        thumbnails: {
-          default: {
-            url: get(videoData, 'thumbnails.default.url', ''),
-            width: get(videoData, 'thumbnails.default.width', 120),
-            height: get(videoData, 'thumbnails.default.height', 90)
-          },
-          medium: {
-            url: get(videoData, 'thumbnails.medium.url', ''),
-            width: get(videoData, 'thumbnails.medium.width', 320),
-            height: get(videoData, 'thumbnails.medium.height', 180)
-          },
-          high: {
-            url: get(videoData, 'thumbnails.high.url', ''),
-            width: get(videoData, 'thumbnails.high.width', 480),
-            height: get(videoData, 'thumbnails.high.height', 360)
-          }
-        },
-        lastUpdated: videoData.lastUpdated || { "__time__": new Date().toISOString() }
-      };
-
-      videos.push(video);
+      videos.push({ ...videoDoc.data(), id: videoDoc.id } as Video);
     });
 
     // Sort videos by order if available
     return sortBy(videos, [(video) => video.order || 999]);
   }
-  
+
   /**
    * Subscribe to updates for a specific channel
    * @param channelId The ID of the channel to subscribe to
@@ -150,14 +116,14 @@ export class FirestoreService {
   subscribeToChannel(channelId: string): () => void {
     // Create a reference to the channel document
     const channelRef = doc(this.firestore, `channels/${channelId}`);
-    
+
     // Set up the listener and return the unsubscribe function
     return onSnapshot(
       channelRef,
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data() as any;
-          
+
           // Emit the update through the subject
           this.channelStatusSubject.next({
             id: snapshot.id,
@@ -175,7 +141,7 @@ export class FirestoreService {
       }
     );
   }
-  
+
   /**
    * Get a single channel by ID without status filtering
    * For tracking channel creation regardless of status
@@ -188,7 +154,7 @@ export class FirestoreService {
       if (!channelDoc.exists()) return null;
 
       const channelData = channelDoc.data() as any;
-      
+
       // Get videos if they exist
       let videos: Video[] = [];
       if (channelData.status === 'live') {

@@ -1,0 +1,13 @@
+<youtube-player
+  #player
+  [videoId]="videoId()"
+  [height]="windowHeight()"
+  [width]="windowWidth()"
+  [playerVars]="playerVars"
+  (ready)="onPlayerReady($event)"
+  (apiChange)="onPlayerApi($event)"
+  (playbackQualityChange)="onPlaybackQualityChange($event)"
+  (playbackRateChange)="onPlaybackRateChange($event)"
+  (stateChange)="onStateChange($event)"
+  (error)="onError($event)"
+/>

@@ -1,13 +1,12 @@
 <div
   class="relative flex flex-col items-center justify-center min-h-screen w-full overflow-hidden dark-mode"
 >
-  <div id="main-container" class="flex f-col h-screen w-full">
-    <router-outlet></router-outlet>
+  <div id="main-container" class="flex f-col h-screen w-full z-[10]">
+    <app-whytv-player></app-whytv-player>
   </div>
 
   @if (state.videoCarouselVisible()) {
   <whytv-channel-carousel
-    [data]="channelsState.channels()"
     class="absolute bottom-0 left-[100px] z-[9999] w-[calc(100vw-200px)]"
   />
   }

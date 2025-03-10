@@ -1,9 +1,8 @@
 import { computed } from '@angular/core';
-import { signalStore, withComputed, withHooks, withState } from '@ngrx/signals';
+import { signalStore, withComputed, withState } from '@ngrx/signals';
 
 
 type VideoPlayerState = {
-  video: Video | null;
   playing: boolean;
   paused: boolean;
   muted: boolean;
@@ -23,7 +22,6 @@ export const videoPlayerState = signalStore(
     providedIn: 'root'
   },
   withState<VideoPlayerState>({
-    video: null,
     playing: false,
     paused: false,
     muted: false,
@@ -37,20 +35,7 @@ export const videoPlayerState = signalStore(
     currentChannel: null,
   }),
   withComputed((state) => ({
-    playPauseLabel: computed(() => state.playing() ? 'Pause' : 'Play')
-  })),
-  withHooks((state) => ({
-    onInit: () => {
-      // inject(ActivatedRoute).queryParams.pipe(
-      //   takeUntilDestroyed()
-      // )
-      // .subscribe(({ channelId, videoId }) => {
-      //   patchState(state, {
-      //     currentChannel: channelId,
-      //     video: videoId
-      //   });
-      // });
-    }
+    playPauseLabel: computed(() => state.playing() ? 'Pause' : 'Play'),
   }))
 );
 
@@ -84,6 +69,7 @@ export type Video = {
   },
   title: string;
   youtubeId: string;
+  id?: string;
 };
 
 export interface Channel {
@@ -94,3 +80,4 @@ export interface Channel {
   provider?: string;  // AI provider used to create the channel
   model?: string;     // AI model used to create the channel
 }
+

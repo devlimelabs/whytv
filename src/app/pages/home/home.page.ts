@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterOutlet } from '@angular/router';
 import { patchState, signalState } from '@ngrx/signals';
 import {
   ChevronDown,
@@ -22,18 +21,19 @@ import { ButtonModule } from 'primeng/button';
 import { SpeedDialModule } from 'primeng/speeddial';
 import { BehaviorSubject, Subscription, timer } from 'rxjs';
 
-import { WhyTvChannelCarouselComponent } from '../../custom-carousel/carousel.component';
-import { channelsStore } from '../../states/channels.state';
+import { ChannelsState } from '../../states/channels.state';
 import { videoPlayerState } from '../../states/video-player.state';
+import { WhyTvChannelCarouselComponent } from './components/whytv-channel-carousel/carousel.component';
+import { WhytvPlayerComponent } from './components/whytv-player/whytv-player.component';
 
 @Component({
   imports: [
     CommonModule,
     SpeedDialModule,
     ButtonModule,
-    RouterOutlet,
     LucideAngularModule,
-    WhyTvChannelCarouselComponent
+    WhyTvChannelCarouselComponent,
+    WhytvPlayerComponent
 ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.css',
@@ -41,7 +41,7 @@ import { videoPlayerState } from '../../states/video-player.state';
 })
 export class HomePage implements OnInit {
   readonly playerState = inject(videoPlayerState);
-  readonly channelsState = inject(channelsStore);
+  readonly channelsState = inject(ChannelsState);
   #userActive = new BehaviorSubject<boolean>(true);
   readonly userActive$ = this.#userActive.asObservable();
   userActivitySub!: Subscription;

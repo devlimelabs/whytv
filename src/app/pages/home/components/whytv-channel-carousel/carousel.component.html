@@ -1,0 +1,49 @@
+<div
+  @showHideVertical
+  class="relative m-auto flex flex-row flex-nowrap items-center justify-center h-36 max-w-screen rounded-t-4xl bg-transparent"
+>
+  <div
+    class="absolute -inset-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-700 to-purple-600 opacity-15 blur-3xl"
+  ></div>
+
+  <p-button
+    type="button"
+    (click)="onPreviousClick()"
+    [icon]="'pi pi-chevron-left'"
+    [rounded]="true"
+    [outlined]="true"
+    styleClass="shadow-xl shadow-pink-500/25 backdrop-blur bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
+  />
+
+  <div class="scene">
+    <div class="carousel" #carousel>
+      @for (channel of channelsState.channels(); track channel.id;) {
+      <div
+        class="carousel__channel group cursor-pointer"
+        #carouselChannel
+        [class.selected]="channel.id === channelId()"
+        [style.background-image]="'url(' + (channel?.videos?.[0]?.thumbnails?.medium?.url || '') + ')'"
+        (click)="loadChannel(channel)"
+      >
+        <div
+          class="invisible group-hover:visible channel-content bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
+        >
+          <h3 class="channel-title text-2xl font-bold">{{ channel.name }}</h3>
+          <p class="channel-videos text-white">
+            {{ channel?.videos?.length || 0 }} videos
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <p-button
+    type="button"
+    (click)="onNextClick()"
+    [icon]="'pi pi-chevron-right'"
+    [rounded]="true"
+    [outlined]="true"
+    styleClass="shadow-xl shadow-pink-500/25 backdrop-blur bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
+  />
+</div>

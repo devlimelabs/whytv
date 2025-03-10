@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   ElementRef,
   inject,
   input,
@@ -14,17 +15,17 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { findIndex, range } from 'lodash';
 import _map from 'lodash/map';
 import { ButtonModule } from 'primeng/button';
-import { map } from 'rxjs';
 
-import { showHideVertical } from '../../animations/show-hide-vertical.animation';
-import { channelsStore } from '../states/channels.state';
-import { Channel } from '../states/video-player.state';
+import { showHideVertical } from '../../../../../animations/show-hide-vertical.animation';
+import { ChannelService } from '../../../../services/channel/channel.service';
+import { ChannelsState } from '../../../../states/channels.state';
+import { Channel } from '../../../../states/video-player.state';
 
 @Component({
   selector: 'whytv-channel-carousel',
@@ -47,27 +48,26 @@ import { Channel } from '../states/video-player.state';
 export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
   private renderer = inject(Renderer2);
   private route = inject(ActivatedRoute);
-  readonly channelsStore = inject(channelsStore);
-
+  readonly channelsState = inject(ChannelsState);
+  readonly channelSvc = inject(ChannelService);
+  readonly destroyRef = inject(DestroyRef);
   carouselElement = viewChild<ElementRef<HTMLElement>>('carousel');
   hovering = signal(false);
 
-  carouselCells = viewChildren<ElementRef<HTMLElement>>('.carousel__cell');
+  carouselCells = viewChildren<ElementRef>('#carouselChannel');
 
   // Signals for reactive state
-  data = input<Channel[]>([]);
   orientation = input<'horizontal' | 'vertical'>('horizontal');
-  channelId = toSignal(this.route.queryParams.pipe(map(params => params['channelId'])));
-
+  channelId = computed(() => this.channelsState.currentChannel()?.id);
   selectedIndex = linkedSignal(() => {
-    return findIndex(this.data(), { id: this.channelId() });
+    return findIndex(this.channelsState.channels(), { id: this.channelId() });
   });
-  cellCount = computed(() => this.data().length);
+  cellCount = computed(() => this.channelsState.channels().length);
   isHorizontal = computed(() => this.orientation() === 'horizontal');
   rotateFn = computed(() => this.isHorizontal() ? 'rotateY' : 'rotateX');
 // Get dimensions
-  cellWidth = linkedSignal(() => this.carouselElement()?.nativeElement?.offsetWidth ?? 0);
-  cellHeight = linkedSignal(() => this.carouselElement()?.nativeElement?.offsetHeight ?? 0);
+  cellWidth = computed(() => this.carouselElement()?.nativeElement?.offsetWidth ?? 0);
+  cellHeight = computed(() => this.carouselElement()?.nativeElement?.offsetHeight ?? 0);
   theta = computed(() => 360 / this.cellCount());
   cellSize = computed(() => this.isHorizontal() ? this.cellWidth() : this.cellHeight());
   radius = computed(() => Math.round(this.cellSize() / 2 / Math.tan(Math.PI / this.cellCount())));
@@ -75,18 +75,26 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
 
   cellsArray = computed(() => range(1, this.cellCount() + 1));
 
+  constructor() {
+    this.channelSvc.channelSet$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(channel => {
+      this.selectedIndex.update(currentIndex => findIndex(this.channelsState.channels(), { id: channel.id }));
+      this.updateCellPositions();
+    });
+  }
+
   ngOnInit(): void {
 
   }
 
   ngAfterViewInit(): void {
-    // Initialize carousel after view is initialized
-    // Update cell positions
-    this.updateCellPositions();
+
 
     // Rotate carousel to show selected index
-    this.rotateCarousel();
-    console.log(this.data(), this.channelId());
+    this.selectedIndex.set(findIndex(this.channelsState.channels(), { id: this.channelsState.currentChannel()?.id }));
+    this.updateCellPositions();
+    console.log(this.channelsState.channels(), this.channelId());
   }
 
   private updateCellPositions(): void {
@@ -110,10 +118,14 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
         this.renderer.setStyle(cell, 'transform', 'none');
       }
     });
+
+    // Call rotateCarousel after all cells have been positioned
+    this.rotateCarousel();
   }
 
   private rotateCarousel(): void {
     const angle = this.theta() * this.selectedIndex() * -1;
+    console.log(this.carouselElement()?.nativeElement);
     this.renderer.setStyle(
       this.carouselElement()?.nativeElement,
       'transform',
@@ -121,15 +133,19 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
     );
   }
 
+  loadChannel(channel: Channel): void {
+    this.channelSvc.setCurrentChannel(channel);
+  }
+
   // Event handlers
   onPreviousClick(): void {
     this.selectedIndex.update(val => val - 1);
-    this.rotateCarousel();
+    this.updateCellPositions();
   }
 
   onNextClick(): void {
     this.selectedIndex.update(val => val + 1);
-    this.rotateCarousel();
+    this.updateCellPositions();
   }
 }
 
