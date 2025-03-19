@@ -1,6 +1,11 @@
 <div
   @showHideVertical
   class="relative m-auto flex flex-row flex-nowrap items-center justify-center h-36 max-w-screen rounded-t-4xl bg-transparent"
+  [ngClass]="{
+    'opacity-0': !state().isUserActive,
+    'opacity-100': state().isUserActive
+  }"
+  style="transition: opacity 0.5s ease-in-out"
 >
   <div
     class="absolute -inset-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-700 to-purple-600 opacity-15 blur-3xl"

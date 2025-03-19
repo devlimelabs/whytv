@@ -71,4 +71,12 @@ export class VideoPlayerService {
   onPaused() {
     patchState(this.#videoPlayerStore, { playing: false, paused: true });
   }
+
+  onMuted() {
+    patchState(this.#videoPlayerStore, { muted: true });
+  }
+
+  onUnmuted() {
+    patchState(this.#videoPlayerStore, { muted: false });
+  }
 }

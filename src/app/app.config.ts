@@ -6,11 +6,14 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter, withComponentInputBinding, withRouterConfig, withViewTransitions } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { DialogService } from 'primeng/dynamicdialog';
 
 import { environment } from '../environments/environment';
 import WhyTvTheme from '../whytv.theme';
 import { routes } from './app.routes';
 import { loadChannels } from './services/channel/channel.service';
+import { initUserActivity } from './services/user-activity.service';
+import { UserActivityState } from './states/user-activity.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -36,6 +39,9 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     MessageService,
+    DialogService,
+    UserActivityState,
+    provideAppInitializer(initUserActivity),
     provideAppInitializer(loadChannels)
   ]
 };

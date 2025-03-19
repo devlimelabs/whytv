@@ -1,0 +1,48 @@
+/* Add any component-specific styles here */
+:host ::ng-deep .p-dropdown {
+  width: 100%;
+}
+
+:host ::ng-deep .p-inputtextarea {
+  width: 100% !important;
+  min-height: 100px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .p-float-label {
+  width: 100%;
+  display: block;
+}
+
+/* Ensure dropdown panel appears above other content */
+:host ::ng-deep .p-dropdown-panel {
+  z-index: 9999 !important;
+}
+
+/* Fix for textarea label positioning */
+:host ::ng-deep .p-float-label label {
+  background: transparent;
+}
+
+/* Ensure dialog has proper z-index */
+:host ::ng-deep .p-dialog {
+  z-index: 1100 !important;
+}
+
+/* Fix for textarea placeholder */
+:host ::ng-deep textarea::placeholder {
+  opacity: 0.5;
+}
+
+/* Fix for dialog content width */
+:host ::ng-deep .create-channel-dialog-content {
+  width: 100%;
+}
+
+/* Ensure the textarea container is full width */
+:host ::ng-deep .p-inputtextarea-wrapper,
+:host ::ng-deep .p-inputtextarea-container {
+  width: 100%;
+  display: block;
+}

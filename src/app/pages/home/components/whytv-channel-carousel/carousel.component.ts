@@ -17,13 +17,17 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { patchState, signalState } from '@ngrx/signals';
 import { findIndex, range } from 'lodash';
 import _map from 'lodash/map';
 import { ButtonModule } from 'primeng/button';
+import { fromEvent } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { showHideVertical } from '../../../../../animations/show-hide-vertical.animation';
 import { ChannelService } from '../../../../services/channel/channel.service';
+import { UserActivityService } from '../../../../services/user-activity.service';
 import { ChannelsState } from '../../../../states/channels.state';
 import { Channel } from '../../../../states/video-player.state';
 
@@ -36,9 +40,7 @@ import { Channel } from '../../../../states/video-player.state';
     CommonModule,
     ButtonModule,
     ReactiveFormsModule,
-    FormsModule,
-    RouterLink,
-
+    FormsModule
   ],
   animations: [
     showHideVertical()
@@ -50,11 +52,17 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
   private route = inject(ActivatedRoute);
   readonly channelsState = inject(ChannelsState);
   readonly channelSvc = inject(ChannelService);
+  readonly userActivitySvc = inject(UserActivityService);
   readonly destroyRef = inject(DestroyRef);
   carouselElement = viewChild<ElementRef<HTMLElement>>('carousel');
   hovering = signal(false);
 
   carouselCells = viewChildren<ElementRef>('carouselChannel');
+
+  // Local component state
+  state = signalState({
+    isUserActive: true
+  });
 
   // Signals for reactive state
   orientation = input<'horizontal' | 'vertical'>('horizontal');
@@ -82,6 +90,12 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
 
   cellsArray = computed(() => range(1, this.channelsState.channels().length + 1));
 
+  // Add these properties for touch handling
+  private startX = 0;
+  private startY = 0;
+  private threshold = 50; // Minimum distance to trigger swipe
+  private touchInProgress = false;
+
   constructor() {
     this.channelSvc.channelSet$.pipe(
       takeUntilDestroyed(this.destroyRef)
@@ -89,6 +103,14 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
       this.selectedIndex.update(currentIndex => findIndex(this.channelsState.channels(), { id: channel.id }));
       this.updateCellPositions();
     });
+
+    // Subscribe to user activity events
+    this.userActivitySvc.activity$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(isActive => {
+        console.log('Carousel received activity event:', isActive);
+        patchState(this.state, { isUserActive: isActive });
+      });
   }
 
   ngOnInit(): void {
@@ -101,6 +123,9 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
       // Rotate carousel to show selected index
       this.selectedIndex.set(findIndex(this.channelsState.channels(), { id: this.channelsState.currentChannel()?.id }));
       this.updateCellPositions();
+
+      // Initialize touch events
+      this.initTouchEvents();
     }, 0);
   }
 
@@ -112,23 +137,27 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
     const fixedRadius = 800;
 
     // Calculate the angle between items based on the number of channels
-    // Adjust buffer to find the right balance of spacing
-    const angleBuffer = this.channelsState.channels().length > 5 ? 8 : 5;
-    const adjustedTheta = this.theta() + angleBuffer;
+    // Use a consistent angle calculation to prevent overlapping
+    const totalChannels = this.channelsState.channels().length;
+    const baseAngle = 360 / totalChannels;
 
     // Set transform and opacity for each cell
     _map(cellElements, (cell: Element, i: number) => {
       if (i < this.cellCount()) {
-        // Visible cell
-        this.renderer.setStyle(cell, 'opacity', '1');
-        const cellAngle = adjustedTheta * i;
+        // Calculate the angle for this cell
+        const cellAngle = baseAngle * i;
 
         // Calculate the angular distance from the selected item
         const selectedIndex = this.selectedIndex();
-        const angularDistance = Math.abs((i - selectedIndex + this.cellCount()) % this.cellCount());
-        const isNearSelected = angularDistance <= 4 || angularDistance >= this.cellCount() - 4;
+        const angularDistance = Math.min(
+          Math.abs((i - selectedIndex + totalChannels) % totalChannels),
+          Math.abs((selectedIndex - i + totalChannels) % totalChannels)
+        );
 
-        // Only show items that are near the selected item
+        // Determine visibility based on distance from selected item
+        const isNearSelected = angularDistance <= 3;
+
+        // Apply appropriate styling based on proximity to selected item
         if (isNearSelected) {
           this.renderer.setStyle(cell, 'opacity', '1');
           this.renderer.setStyle(
@@ -137,12 +166,16 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
             `${this.rotateFn()}(${cellAngle}deg) translateZ(${fixedRadius}px)`
           );
         } else {
-          // Hide items that are far from the selected item
-          this.renderer.setStyle(cell, 'opacity', '0.2');
+          // Fade out items that are far from the selected item
+          const opacity = Math.max(0.2, 1 - (angularDistance * 0.15));
+          this.renderer.setStyle(cell, 'opacity', opacity.toString());
+
+          // Scale down distant items slightly to create depth
+          const scale = Math.max(0.7, 1 - (angularDistance * 0.05));
           this.renderer.setStyle(
             cell,
             'transform',
-            `${this.rotateFn()}(${cellAngle}deg) translateZ(${fixedRadius}px) scale(0.8)`
+            `${this.rotateFn()}(${cellAngle}deg) translateZ(${fixedRadius}px) scale(${scale})`
           );
         }
       } else {
@@ -157,21 +190,17 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
   }
 
   private rotateCarousel(): void {
-    // Calculate the angle between items based on the number of channels
-    // Adjust buffer to find the right balance of spacing
-    const angleBuffer = this.channelsState.channels().length > 5 ? 8 : 5;
-    const adjustedTheta = this.theta() + angleBuffer;
+    // Use the same base angle calculation as in updateCellPositions
+    const totalChannels = this.channelsState.channels().length;
+    const baseAngle = 360 / totalChannels;
 
-    const angle = adjustedTheta * this.selectedIndex() * -1;
-
-    // Apply a small offset to center the selected item
-    // This helps adjust for any slight misalignment
-    const offset = 0;
+    // Calculate the rotation angle based on selected index
+    const angle = baseAngle * this.selectedIndex() * -1;
 
     this.renderer.setStyle(
       this.carouselElement()?.nativeElement,
       'transform',
-      `translateZ(-800px) ${this.rotateFn()}(${angle + offset}deg)`
+      `translateZ(-800px) ${this.rotateFn()}(${angle}deg)`
     );
   }
 
@@ -209,6 +238,63 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
       return currentIndex + 1;
     });
     this.updateCellPositions();
+  }
+
+  private initTouchEvents(): void {
+    const element = this.carouselElement()?.nativeElement;
+    if (!element) return;
+
+    // Touch start event
+    fromEvent<TouchEvent>(element, 'touchstart')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap(event => {
+          if (event.touches.length === 1) {
+            this.startX = event.touches[0].clientX;
+            this.startY = event.touches[0].clientY;
+            this.touchInProgress = true;
+          }
+        })
+      )
+      .subscribe();
+
+    // Touch end event
+    fromEvent<TouchEvent>(element, 'touchend')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap(event => {
+          if (!this.touchInProgress) return;
+
+          const endX = event.changedTouches[0].clientX;
+          const endY = event.changedTouches[0].clientY;
+
+          // Calculate distance and direction
+          const deltaX = endX - this.startX;
+          const deltaY = endY - this.startY;
+
+          // Determine if horizontal or vertical swipe based on orientation
+          if (this.isHorizontal()) {
+            if (Math.abs(deltaX) >= this.threshold) {
+              if (deltaX > 0) {
+                this.onPreviousClick(); // Swipe right → previous
+              } else {
+                this.onNextClick(); // Swipe left → next
+              }
+            }
+          } else {
+            if (Math.abs(deltaY) >= this.threshold) {
+              if (deltaY > 0) {
+                this.onPreviousClick(); // Swipe down → previous
+              } else {
+                this.onNextClick(); // Swipe up → next
+              }
+            }
+          }
+
+          this.touchInProgress = false;
+        })
+      )
+      .subscribe();
   }
 }
 

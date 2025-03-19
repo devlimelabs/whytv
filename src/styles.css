@@ -3,3 +3,60 @@
 @import "tailwindcss-primeui";
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
+
+/* Global styles for dialogs and dropdowns */
+.p-dropdown-panel {
+  z-index: 9999 !important;
+}
+
+.p-component-overlay {
+  z-index: 9000 !important;
+}
+
+.p-dialog {
+  z-index: 9500 !important;
+}
+
+/* Specific styles for create channel dialog */
+.create-channel-dialog .p-dialog-content {
+  overflow: visible !important;
+  padding: 1.5rem !important;
+}
+
+.create-channel-dialog .p-inputtextarea {
+  min-height: 100px;
+  width: 100% !important;
+}
+
+.create-channel-dialog textarea {
+  width: 100% !important;
+}
+
+/* Fix for textarea placeholder */
+textarea::placeholder {
+  opacity: 0.5;
+}
+
+/* Ensure dropdown panels are appended to body and visible */
+body .p-dropdown-panel {
+  overflow: visible;
+  max-height: none;
+}
+
+/* Fix for PrimeNG components in dialogs */
+.p-dialog-content .p-inputtextarea,
+.p-dialog-content .p-dropdown {
+  width: 100% !important;
+}
+
+.p-dialog-content .p-float-label {
+  width: 100%;
+  display: block;
+}
+
+/* Fix for textarea container */
+.p-inputtextarea-wrapper,
+.p-inputtextarea-container {
+  width: 100%;
+  display: block;
+}

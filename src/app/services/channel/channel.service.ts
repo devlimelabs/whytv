@@ -3,8 +3,10 @@ import { Firestore } from '@angular/fire/firestore';
 import { patchState } from '@ngrx/signals';
 import { addDoc, collection } from 'firebase/firestore';
 import { MessageService } from 'primeng/api';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subject } from 'rxjs';
 
+import { CreateChannelDialogComponent } from '../../components/create-channel-dialog/create-channel-dialog.component';
 import { ChannelsState } from '../../states/channels.state';
 import { Channel } from '../../states/video-player.state';
 import { FirestoreService } from '../firestore.service';
@@ -17,13 +19,46 @@ export class ChannelService implements OnDestroy {
   private messageSvc = inject(MessageService);
   private channelsStore = inject(ChannelsState);
   private firestoreService = inject(FirestoreService);
+  private dialogService = inject(DialogService);
   #channelSet = new Subject<Channel>();
 
   // Track active subscriptions
   private destroy$ = new Subject<void>();
   private activeSubscription: (() => void) | null = null;
+  private dialogRef: DynamicDialogRef | null = null;
 
   readonly channelSet$ = this.#channelSet.asObservable();
+
+  /**
+   * Open the create channel dialog
+   * @returns A promise that resolves when the dialog is closed
+   */
+  openCreateChannelDialog(): Promise<boolean> {
+    // Close any existing dialog
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
+
+    // Open the dialog
+    this.dialogRef = this.dialogService.open(CreateChannelDialogComponent, {
+      header: 'Create Channel',
+      width: '25rem',
+      contentStyle: {
+        'max-height': '80vh',
+        'overflow': 'auto',
+        'padding': '1.5rem',
+        'width': '100%'
+      },
+      baseZIndex: 10000,
+      modal: true,
+      dismissableMask: true,
+      closeOnEscape: true,
+      styleClass: 'create-channel-dialog p-dialog-md'
+    });
+
+    // Return a promise that resolves when the dialog is closed
+    return this.dialogRef.onClose.toPromise();
+  }
 
   /**
    * Create a new channel with the provided description, provider and model
@@ -223,6 +258,9 @@ export class ChannelService implements OnDestroy {
   ngOnDestroy(): void {
     if (this.activeSubscription) {
       this.activeSubscription();
+    }
+    if (this.dialogRef) {
+      this.dialogRef.close();
     }
     this.destroy$.next();
     this.destroy$.complete();

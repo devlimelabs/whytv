@@ -23,6 +23,7 @@ import { BehaviorSubject, Subscription, timer } from 'rxjs';
 
 import { ChannelsState } from '../../states/channels.state';
 import { videoPlayerState } from '../../states/video-player.state';
+import { SideActionsComponent } from './components/side-actions/side-actions.component';
 import { WhyTvChannelCarouselComponent } from './components/whytv-channel-carousel/carousel.component';
 import { WhytvPlayerComponent } from './components/whytv-player/whytv-player.component';
 
@@ -33,8 +34,9 @@ import { WhytvPlayerComponent } from './components/whytv-player/whytv-player.com
     ButtonModule,
     LucideAngularModule,
     WhyTvChannelCarouselComponent,
-    WhytvPlayerComponent
-],
+    WhytvPlayerComponent,
+    SideActionsComponent
+  ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,6 +48,10 @@ export class HomePage implements OnInit {
   readonly userActive$ = this.#userActive.asObservable();
   userActivitySub!: Subscription;
   readonly destroyRef = inject(DestroyRef);
+
+  // Channel rail visibility service
+  #channelRailVisible = new BehaviorSubject<boolean>(false);
+  readonly channelRailVisible$ = this.#channelRailVisible.asObservable();
 
   @HostListener('mousemove', ['$event'])
   @HostListener('click', ['$event'])
@@ -212,7 +218,7 @@ export class HomePage implements OnInit {
   handleToggleChannelRail(event: any) {
     event.preventDefault();
     this.markUserActive();
-    this.toggleChannelCarousel();
+    this.toggleChannelRail();
   }
 
   handleCreateChannel(event: any) {
@@ -221,10 +227,11 @@ export class HomePage implements OnInit {
     // Implement create channel logic
   }
 
-  toggleChannelCarousel() {
+  toggleChannelRail() {
     patchState(this.state, {
       channelCarouselVisible: !this.state().channelCarouselVisible
     });
+    this.#channelRailVisible.next(this.state().channelCarouselVisible);
   }
 
   // Helper method to update item labels

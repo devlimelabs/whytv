@@ -1,0 +1,61 @@
+<div class="create-channel-dialog-content w-full">
+  <div class="flex flex-col gap-5 mb-4 w-full">
+    <div class="w-full">
+      <p-floatLabel class="w-full block">
+        <textarea
+          #channelDescriptionTextarea
+          pInputTextarea
+          id="channelDescription"
+          rows="5"
+          class="w-full"
+          [ngModel]="state().channelDescription"
+          (ngModelChange)="updateChannelDescription($event)"
+          placeholder="What would you like to watch?"
+          style="width: 100%"
+        ></textarea>
+        <label for="channelDescription">What would you like to watch?</label>
+      </p-floatLabel>
+    </div>
+
+    <!-- Provider selection -->
+    <div class="p-field w-full">
+      <label for="provider" class="block text-sm mb-2">AI Provider</label>
+      <p-dropdown
+        id="provider"
+        [options]="providerOptions"
+        [ngModel]="state().selectedProvider"
+        (ngModelChange)="updateSelectedProvider($event)"
+        optionLabel="name"
+        optionValue="value"
+        styleClass="w-full"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+
+    <!-- Model selection -->
+    <div class="p-field w-full">
+      <label for="model" class="block text-sm mb-2">AI Model</label>
+      <p-dropdown
+        id="model"
+        [options]="currentModelOptions"
+        [ngModel]="state().selectedModel"
+        (ngModelChange)="updateSelectedModel($event)"
+        optionLabel="name"
+        optionValue="value"
+        styleClass="w-full"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-4 mt-4">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      (click)="cancelChannelCreation()"
+    ></p-button>
+    <p-button label="Create" (click)="submitChannelCreation()"></p-button>
+  </div>
+</div>

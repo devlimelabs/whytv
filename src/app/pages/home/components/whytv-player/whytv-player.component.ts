@@ -78,9 +78,28 @@ export class WhytvPlayerComponent implements AfterViewInit {
         this.playVideo();
       });
 
-    this.videoPlayerSvc.pause$.subscribe(() => {
-      this.pauseVideo();
-    });
+    this.videoPlayerSvc.pause$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.pauseVideo();
+      });
+
+    // Subscribe to volume changes
+    this.videoPlayerSvc.volume$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((volume) => {
+        this.volume = volume;
+        if (volume === 0) {
+          this.youtubePlayer()?.mute();
+          this.isMuted = true;
+          this.videoPlayerSvc.onMuted();
+        } else {
+          this.youtubePlayer()?.unMute();
+          this.youtubePlayer()?.setVolume(volume);
+          this.isMuted = false;
+          this.videoPlayerSvc.onUnmuted();
+        }
+      });
   }
   ngAfterViewInit() {
     // Initial setup
@@ -228,11 +247,10 @@ export class WhytvPlayerComponent implements AfterViewInit {
 
   toggleMute() {
     if (this.isMuted) {
-      this.youtubePlayer()?.unMute();
+      this.videoPlayerSvc.volume(this.volume > 0 ? this.volume : 100);
     } else {
-      this.youtubePlayer()?.mute();
+      this.videoPlayerSvc.volume(0);
     }
-    this.isMuted = !this.isMuted;
   }
 
   setVolume(event: Event) {
