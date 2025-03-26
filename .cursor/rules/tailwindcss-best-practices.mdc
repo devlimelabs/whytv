@@ -1,0 +1,13 @@
+---
+description: 
+globs: **/*.ts,**/*.html,**/*.js,**/*.css,**/*.scss
+alwaysApply: false
+---
+
+# Best practices for using Tailwind CSS
+
+- Always use Tailwind CSS classes over custom CSS for consistency and maintainability
+- Use Tailwind's utility-first approach to create responsive and customizable UI components
+- Organize Tailwind classes in a logical order (e.g., layout, spacing, typography, colors)
+- Use Tailwind's @apply directive to create reusable component styles
+- Keep your Tailwind configuration file (tailwind.config.js) organized and well-documented

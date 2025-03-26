@@ -1,6 +1,6 @@
 ---
 description: How to implement data flow for retrieving, setting, and sharing stateful data. how to structure stores, services, and component responsibilties
-globs: src/app/**/*.{ts,html}
+globs: src/app/**/*.ts,src/app/**/*.html
 alwaysApply: false
 ---
 

@@ -1,0 +1,16 @@
+---
+description: 
+globs: **/*.spec.ts,**/*.spec.js
+alwaysApply: false
+---
+
+# Best practices for unit testing
+
+- Always use a behavior-driven development approach for more resilient and useful test cases
+- Keep tests focused on specific behaviors or functionalities
+- Use descriptive names for test suites and individual test cases
+- Prefer stubs for logical dependencies (ie services, especially those that use http)
+- when stubbing services the stub methods should return mocked (or recorded) data to keep tests using life like data and scenarios
+- Mock dependencies only when necessary, but avoid mocking data in the code itself
+- Never change logic code to make a test pass unless following test-driven development and the logic is 100% wrong; always consult with the user before making such changes
+

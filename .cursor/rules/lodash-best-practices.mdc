@@ -1,0 +1,12 @@
+---
+description: 
+globs: **/*.ts,**/*.js
+alwaysApply: false
+---
+
+# Best practices for using Lodash utility library
+
+- Always prefer Lodash over native array and object methods for consistency and performance
+- Use Lodash chaining for complex operations to improve readability
+- Import only the necessary Lodash functions to reduce bundle size
+- Be mindful of Lodash's performance impact and use it judiciously

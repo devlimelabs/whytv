@@ -1,0 +1,15 @@
+---
+description: 
+globs: **/*.ts,**/*.html,**/*.css,**/*.scss
+alwaysApply: false
+---
+description: Best practices and guidelines for Angular development
+
+- Always use standalone components for better modularity and performance
+- Never use Angular Modules; they are deprecated in favor of standalone components
+- Always separate HTML, CSS, and TypeScript into individual files for better maintainability
+- Always use OnPush ChangeDetection strategy for improved performance
+- Always use signals and signal-based functions like input() and output() for reactive state management
+- Manage state using Angular signals and ngrx signalState for a consistent and scalable approach
+- Always lazy-load components and routes that are not the first ones loaded for a page to optimize initial load time
+- Always use static routes files for better performance and easier maintenance

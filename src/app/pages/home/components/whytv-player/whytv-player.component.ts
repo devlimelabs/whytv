@@ -74,15 +74,11 @@ export class WhytvPlayerComponent implements AfterViewInit {
   constructor() {
     this.videoPlayerSvc.play$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.playVideo();
-      });
+      .subscribe(() => this.playVideo());
 
     this.videoPlayerSvc.pause$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.pauseVideo();
-      });
+      .subscribe(() => this.pauseVideo());
 
     // Subscribe to volume changes
     this.videoPlayerSvc.volume$

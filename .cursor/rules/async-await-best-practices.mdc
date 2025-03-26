@@ -1,0 +1,12 @@
+---
+description: 
+globs: **/*.ts,**/*.js
+alwaysApply: false
+---
+
+# Best practices for using async/await syntax
+
+- Always prefer async/await syntax over Promises or callbacks for better readability
+- Use try/catch blocks to handle errors in async functions
+- Only use await when the result is needed immediately or before the next code executes
+- Be mindful of performance when using multiple awaits in a single function
