@@ -1,5 +1,4 @@
 import { inject, Injectable } from '@angular/core';
-import { patchState } from '@ngrx/signals';
 import { MessageService } from 'primeng/api';
 import { Subject } from 'rxjs';
 
@@ -95,19 +94,19 @@ export class VideoPlayerService {
    * These methods update the signal state to reflect the actual player state
    */
   onPlayed() {
-    patchState(this.#videoPlayerStore, { playing: true, paused: false });
+    this.#videoPlayerStore.updatePlayingState(true, false);
   }
 
   onPaused() {
-    patchState(this.#videoPlayerStore, { playing: false, paused: true });
+    this.#videoPlayerStore.updatePlayingState(false, true);
   }
 
   onMuted() {
-    patchState(this.#videoPlayerStore, { muted: true });
+    this.#videoPlayerStore.setMuted(true);
   }
 
   onUnmuted() {
-    patchState(this.#videoPlayerStore, { muted: false });
+    this.#videoPlayerStore.setMuted(false);
   }
 
   /**
@@ -115,25 +114,20 @@ export class VideoPlayerService {
    * This is a special method for the WhytvPlayerComponent which has direct access to YouTube Player API
    */
   updatePlayingState(playing: boolean, paused: boolean) {
-    patchState(this.#videoPlayerStore, { playing, paused });
+    this.#videoPlayerStore.updatePlayingState(playing, paused);
   }
 
   /**
    * Toggle the liked state of the current video
    */
   toggleLiked() {
-    const currentLikedState = this.#videoPlayerStore.liked();
-    patchState(this.#videoPlayerStore, { liked: !currentLikedState });
+    this.#videoPlayerStore.toggleLiked();
   }
 
   /**
    * Set the user as active and update related UI states
    */
   setUserActive() {
-    patchState(this.#videoPlayerStore, {
-      userIsActive: true,
-      showControls: true,
-      hideUIOverlays: false
-    });
+    this.#videoPlayerStore.setUserActive();
   }
 }

@@ -23,7 +23,6 @@ import { UserActivityService } from '../../../../services/user-activity.service'
 import { VideoPlayerService } from '../../../../services/video-player.service';
 import { UserActivityState } from '../../../../states/user-activity.state';
 import { videoPlayerState } from '../../../../states/video-player.state';
-import { HomePage } from '../../home.page';
 
 @Component({
   selector: 'app-side-actions',
@@ -46,7 +45,6 @@ export class SideActionsComponent implements OnInit {
   readonly channelSvc = inject(ChannelService);
   readonly userActivitySvc = inject(UserActivityService);
   readonly userActivityState = inject(UserActivityState);
-  private readonly homePage = inject(HomePage);
   readonly destroyRef = inject(DestroyRef);
 
   // State
@@ -158,8 +156,8 @@ export class SideActionsComponent implements OnInit {
   handleToggleChannelRail(event: MouseEvent) {
     event.preventDefault();
     this.markUserActive();
-    // Toggle channel rail visibility via the HomePage
-    this.homePage.toggleChannelRail();
+    // TODO: Implement channel rail toggle functionality
+    // This should be managed through a proper service or state management
   }
 
   ngOnInit(): void {
@@ -168,11 +166,5 @@ export class SideActionsComponent implements OnInit {
       this.initialAnimation.set(false);
     }, 100);
 
-    // Subscribe to channel rail visibility changes from HomePage
-    this.homePage.channelRailVisible$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(visible => {
-        // Update local state if needed for UI changes
-      });
   }
 }

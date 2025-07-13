@@ -1,5 +1,5 @@
 import { computed } from '@angular/core';
-import { signalStore, withComputed, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 
 
 type VideoPlayerState = {
@@ -49,6 +49,67 @@ export const videoPlayerState = signalStore(
   }),
   withComputed((state) => ({
     playPauseLabel: computed(() => state.playing() ? 'Pause' : 'Play'),
+  })),
+  withMethods((store) => ({
+    /**
+     * Update playing state - for WhytvPlayerComponent use only
+     */
+    updatePlayingState(playing: boolean, paused: boolean) {
+      patchState(store, { playing, paused });
+    },
+
+    /**
+     * Set muted state
+     */
+    setMuted(muted: boolean) {
+      patchState(store, { muted });
+    },
+
+    /**
+     * Toggle liked state
+     */
+    toggleLiked() {
+      patchState(store, { liked: !store.liked() });
+    },
+
+    /**
+     * Set user active state
+     */
+    setUserActive() {
+      patchState(store, {
+        userIsActive: true,
+        showControls: true,
+        hideUIOverlays: false
+      });
+    },
+
+    /**
+     * Update loading state
+     */
+    setLoading(loading: boolean) {
+      patchState(store, { loading });
+    },
+
+    /**
+     * Set error state
+     */
+    setError(error: string | null) {
+      patchState(store, { error });
+    },
+
+    /**
+     * Update progress
+     */
+    updateProgress(progress: number) {
+      patchState(store, { progress });
+    },
+
+    /**
+     * Set current channel
+     */
+    setCurrentChannel(channel: Channel | null) {
+      patchState(store, { currentChannel: channel });
+    }
   }))
 );
 

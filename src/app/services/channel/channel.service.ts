@@ -1,6 +1,5 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
-import { patchState } from '@ngrx/signals';
 import { addDoc, collection } from 'firebase/firestore';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -136,23 +135,15 @@ export class ChannelService implements OnDestroy {
      */
   async loadChannels() {
     let channels: any[] = [];
-    patchState(this.channelsStore, { isLoading: true, error: null });
+    this.channelsStore.setLoading(true);
 
     try {
       channels = await this.firestoreService.getChannels();
 
       if (channels.length > 0) {
-        patchState(this.channelsStore, {
-          channels,
-          currentChannel: channels[0],
-          currentVideoIndex: 0,
-          isLoading: false
-        });
+        this.channelsStore.setChannels(channels);
       } else {
-        patchState(this.channelsStore, {
-          channels: [],
-          isLoading: false
-        });
+        this.channelsStore.setChannels([]);
       }
 
       this.messageSvc.add({
@@ -162,10 +153,7 @@ export class ChannelService implements OnDestroy {
       });
     } catch (error) {
       console.error('Error loading channels:', error);
-      patchState(this.channelsStore, {
-        isLoading: false,
-        error: 'Failed to load channels'
-      });
+      this.channelsStore.setLoading(false, 'Failed to load channels');
     }
 
     return channels;
@@ -187,10 +175,7 @@ export class ChannelService implements OnDestroy {
 
       // If found, set it as the current channel
       if (newChannel) {
-        patchState(this.channelsStore, {
-          currentChannel: newChannel,
-          currentVideoIndex: 0
-        });
+        this.channelsStore.setCurrentChannel(newChannel);
       }
     } catch (error) {
       console.error('Error loading new channel:', error);
@@ -206,9 +191,7 @@ export class ChannelService implements OnDestroy {
      * Set the active channel
      */
   setCurrentChannel(channel: Channel) {
-    patchState(this.channelsStore, {
-      currentChannel: channel
-    });
+    this.channelsStore.setCurrentChannel(channel);
     this.#channelSet.next(channel);
   }
 
@@ -217,15 +200,7 @@ export class ChannelService implements OnDestroy {
    * @returns true if successful, false if at the end
    */
   nextVideo(): void {
-    const channel = this.channelsStore.currentChannel();
-    const index = this.channelsStore.currentVideoIndex();
-    const count = channel?.videos?.length || 0;
-
-    if (count > 0 && index < count - 1) {
-      patchState(this.channelsStore, { currentVideoIndex: index + 1 });
-    } else {
-      patchState(this.channelsStore, { currentVideoIndex: 0 });
-    }
+    this.channelsStore.nextVideo();
 
     this.messageSvc.add({
       severity: 'info',
@@ -239,11 +214,7 @@ export class ChannelService implements OnDestroy {
    * @returns true if successful, false if at the beginning
    */
   previousVideo(): void {
-    const index = this.channelsStore.currentVideoIndex();
-
-    if (index > 0) {
-      patchState(this.channelsStore, { currentVideoIndex: index - 1 });
-    }
+    this.channelsStore.previousVideo();
 
     this.messageSvc.add({
       severity: 'info',

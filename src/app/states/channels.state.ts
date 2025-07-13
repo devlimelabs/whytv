@@ -89,8 +89,41 @@ export const ChannelsState = signalStore(
     };
   }),
   withMethods((store, firestoreService = inject(FirestoreService), router = inject(Router)) => ({
+    /**
+     * Set loading state
+     */
+    setLoading(isLoading: boolean, error: string | null = null) {
+      patchState(store, { isLoading, error });
+    },
 
+    /**
+     * Set channels data
+     */
+    setChannels(channels: Channel[]) {
+      if (channels.length > 0) {
+        patchState(store, {
+          channels,
+          currentChannel: channels[0],
+          currentVideoIndex: 0,
+          isLoading: false
+        });
+      } else {
+        patchState(store, {
+          channels: [],
+          isLoading: false
+        });
+      }
+    },
 
+    /**
+     * Set the current channel
+     */
+    setCurrentChannel(channel: Channel) {
+      patchState(store, {
+        currentChannel: channel,
+        currentVideoIndex: 0
+      });
+    },
 
     /**
      * Set the current video index
@@ -106,7 +139,30 @@ export const ChannelsState = signalStore(
       }
     },
 
+    /**
+     * Go to next video
+     */
+    nextVideo() {
+      const channel = store.currentChannel();
+      const index = store.currentVideoIndex();
+      const count = channel?.videos?.length || 0;
 
+      if (count > 0 && index < count - 1) {
+        patchState(store, { currentVideoIndex: index + 1 });
+      } else {
+        patchState(store, { currentVideoIndex: 0 });
+      }
+    },
+
+    /**
+     * Go to previous video
+     */
+    previousVideo() {
+      const index = store.currentVideoIndex();
+      if (index > 0) {
+        patchState(store, { currentVideoIndex: index - 1 });
+      }
+    },
 
     /**
      * Set mock channels for fallback or testing
