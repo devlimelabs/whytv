@@ -33,12 +33,14 @@ import { ChannelService } from '../../../../services/channel/channel.service';
 import { VideoPlayerService } from '../../../../services/video-player.service';
 import { ChannelsState } from '../../../../states/channels.state';
 import { videoPlayerState } from '../../../../states/video-player.state';
+import { VideoControlsComponent } from '../video-controls/video-controls.component';
 
 @Component({
   selector: 'app-whytv-player',
   imports: [
     CommonModule,
-    YouTubePlayerModule
+    YouTubePlayerModule,
+    VideoControlsComponent
   ],
   templateUrl: './whytv-player.component.html',
   styleUrl: './whytv-player.component.css',
@@ -84,6 +86,7 @@ export class WhytvPlayerComponent implements AfterViewInit {
 
   // Timer for progress updates
   private progressTimer: any;
+  private lastEmittedTime = 0;
 
   constructor() {
     this.videoPlayerSvc.play$
@@ -211,13 +214,37 @@ export class WhytvPlayerComponent implements AfterViewInit {
   }
 
   startProgressTimer() {
+    this.stopProgressTimer(); // Clear any existing timer
+    
+    // Update time every 250ms for smooth progress
     this.progressTimer = setInterval(() => {
-      this.currentTime = this.youtubePlayer()?.getCurrentTime() ?? 0;
-    }, 1000);
+      this.emitTimeUpdate();
+    }, 250);
   }
 
   stopProgressTimer() {
-    clearInterval(this.progressTimer);
+    if (this.progressTimer) {
+      clearInterval(this.progressTimer);
+      this.progressTimer = null;
+    }
+  }
+
+  private emitTimeUpdate() {
+    const player = this.youtubePlayer();
+    if (player) {
+      const currentTime = player.getCurrentTime();
+      const duration = player.getDuration();
+      
+      // Only emit if time has changed significantly (avoid flooding)
+      if (Math.abs(currentTime - this.lastEmittedTime) >= 0.1 || currentTime === 0) {
+        this.lastEmittedTime = currentTime;
+        this.videoPlayerSvc.emitTimeUpdate(currentTime, duration);
+      }
+
+      // Also emit buffer updates
+      const buffered = player.getVideoLoadedFraction() * duration;
+      this.videoPlayerSvc.emitBufferUpdate(buffered);
+    }
   }
 
   private playVideo() {

@@ -1,13 +1,18 @@
-<youtube-player
-  #player
-  [videoId]="videoId()"
-  [height]="windowHeight()"
-  [width]="windowWidth()"
-  [playerVars]="playerVars"
-  (ready)="onPlayerReady($event)"
-  (apiChange)="onPlayerApi($event)"
-  (playbackQualityChange)="onPlaybackQualityChange($event)"
-  (playbackRateChange)="onPlaybackRateChange($event)"
-  (stateChange)="onStateChange($event)"
-  (error)="onError($event)"
-/>
+<div class="player-container">
+  <youtube-player
+    #player
+    [videoId]="videoId()"
+    [height]="windowHeight()"
+    [width]="windowWidth()"
+    [playerVars]="playerVars"
+    (ready)="onPlayerReady($event)"
+    (apiChange)="onPlayerApi($event)"
+    (playbackQualityChange)="onPlaybackQualityChange($event)"
+    (playbackRateChange)="onPlaybackRateChange($event)"
+    (stateChange)="onStateChange($event)"
+    (error)="onError($event)"
+  />
+  
+  <!-- Custom Video Controls -->
+  <app-video-controls></app-video-controls>
+</div>

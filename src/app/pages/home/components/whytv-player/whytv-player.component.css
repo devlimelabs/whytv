@@ -1,5 +1,14 @@
 :host {
   display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.player-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 youtube-player {
@@ -22,12 +31,31 @@ youtube-player iframe {
   visibility: visible !important;
 }
 
-/* Hide YouTube related videos suggestions at all costs */
-.ytp-pause-overlay,
-.ytp-related-videos-card,
-.ytp-endscreen-content {
+/* Hide YouTube related videos suggestions and overlays at all costs */
+:host ::ng-deep .ytp-pause-overlay,
+:host ::ng-deep .ytp-related-videos-card,
+:host ::ng-deep .ytp-endscreen-content,
+:host ::ng-deep .ytp-ce-element,
+:host ::ng-deep .ytp-ce-covering-overlay,
+:host ::ng-deep .ytp-ce-element-shadow,
+:host ::ng-deep .ytp-ce-covering-image,
+:host ::ng-deep .ytp-ce-expanding-image,
+:host ::ng-deep .ytp-ce-element.ytp-ce-video,
+:host ::ng-deep .ytp-ce-element.ytp-ce-channel,
+:host ::ng-deep .ytp-pause-overlay,
+:host ::ng-deep .ytp-scroll-min,
+:host ::ng-deep .ytp-pause-overlay-controls,
+:host ::ng-deep .ytp-related-video-cap,
+:host ::ng-deep .ytp-endscreen-paginate,
+:host ::ng-deep .ytp-show-tiles,
+:host ::ng-deep .ytp-player-content,
+:host ::ng-deep .videowall-endscreen,
+:host ::ng-deep .ytp-endscreen-previous,
+:host ::ng-deep .ytp-endscreen-next {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }

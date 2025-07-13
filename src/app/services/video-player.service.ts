@@ -43,6 +43,8 @@ export class VideoPlayerService {
   #volume = new Subject<number>();
   #rate = new Subject<number>();
   #quality = new Subject<string>();
+  #timeUpdate = new Subject<{ currentTime: number; duration: number }>();
+  #bufferUpdate = new Subject<number>();
 
   readonly play$ = this.#play.asObservable();
   readonly pause$ = this.#pause.asObservable();
@@ -51,6 +53,8 @@ export class VideoPlayerService {
   readonly volume$ = this.#volume.asObservable();
   readonly rate$ = this.#rate.asObservable();
   readonly quality$ = this.#quality.asObservable();
+  readonly timeUpdate$ = this.#timeUpdate.asObservable();
+  readonly bufferUpdate$ = this.#bufferUpdate.asObservable();
 
 
 
@@ -129,5 +133,19 @@ export class VideoPlayerService {
    */
   setUserActive() {
     this.#videoPlayerStore.setUserActive();
+  }
+
+  /**
+   * Emit time update - called by WhytvPlayerComponent during playback
+   */
+  emitTimeUpdate(currentTime: number, duration: number) {
+    this.#timeUpdate.next({ currentTime, duration });
+  }
+
+  /**
+   * Emit buffer update - called by WhytvPlayerComponent when buffer changes
+   */
+  emitBufferUpdate(buffered: number) {
+    this.#bufferUpdate.next(buffered);
   }
 }

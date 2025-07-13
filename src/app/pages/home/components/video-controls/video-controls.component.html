@@ -1,0 +1,132 @@
+<div class="video-controls" appUserActivityVisibility>
+  <!-- Progress Bar Container -->
+  <div class="progress-container">
+    <!-- Buffered Progress -->
+    <div class="progress-buffered" [style.width.%]="bufferedPercentage()"></div>
+    
+    <!-- Played Progress -->
+    <div class="progress-played" [style.width.%]="progressPercentage()"></div>
+    
+    <!-- Slider for seeking -->
+    <p-slider
+      [(ngModel)]="progressSliderValue"
+      [min]="0"
+      [max]="duration()"
+      [step]="0.1"
+      (onChange)="handleSeek($event.value || 0)"
+      class="progress-slider"
+      styleClass="custom-slider"
+    ></p-slider>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <!-- Left Controls -->
+    <div class="controls-left">
+      <!-- Play/Pause Button -->
+      <button
+        pButton
+        [icon]="playing() ? 'none' : 'none'"
+        (click)="handlePlayPause()"
+        class="control-button"
+        [pTooltip]="playing() ? 'Pause' : 'Play'"
+        tooltipPosition="top"
+      >
+        <lucide-icon
+          [img]="playing() ? Pause : Play"
+          [size]="20"
+        ></lucide-icon>
+      </button>
+
+      <!-- Volume Controls -->
+      <div class="volume-controls">
+        <button
+          pButton
+          [icon]="'none'"
+          (click)="handleMute()"
+          class="control-button"
+          [pTooltip]="muted() ? 'Unmute' : 'Mute'"
+          tooltipPosition="top"
+        >
+          <lucide-icon
+            [img]="muted() ? VolumeX : Volume2"
+            [size]="20"
+          ></lucide-icon>
+        </button>
+        
+        <div class="volume-slider-container">
+          <p-slider
+            [(ngModel)]="volume"
+            [min]="0"
+            [max]="100"
+            [step]="1"
+            (onChange)="handleVolumeChange($event.value || 0)"
+            class="volume-slider"
+            styleClass="volume-custom-slider"
+            [disabled]="muted()"
+          ></p-slider>
+        </div>
+      </div>
+
+      <!-- Time Display -->
+      <div class="time-display">
+        <span class="current-time">{{ formattedCurrentTime() }}</span>
+        <span class="time-separator">/</span>
+        <span class="duration">{{ formattedDuration() }}</span>
+      </div>
+    </div>
+
+    <!-- Center Controls - Video Title -->
+    <div class="controls-center">
+      @if (currentVideo()) {
+        <span class="video-title">{{ currentVideo()!.title }}</span>
+      }
+    </div>
+
+    <!-- Right Controls -->
+    <div class="controls-right">
+      <!-- Playback Speed -->
+      <div class="speed-control">
+        <button
+          pButton
+          [icon]="'none'"
+          (click)="showSpeedMenu.set(!showSpeedMenu())"
+          class="control-button"
+          [pTooltip]="'Playback speed'"
+          tooltipPosition="top"
+        >
+          <span class="speed-label">{{ playbackSpeed() }}x</span>
+        </button>
+        
+        @if (showSpeedMenu()) {
+          <div class="speed-menu">
+            @for (speed of speedOptions; track speed.value) {
+              <button
+                pButton
+                [label]="speed.label"
+                (click)="handleSpeedChange(speed.value)"
+                class="speed-option"
+                [class.active]="speed.value === playbackSpeed()"
+              ></button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Fullscreen Button -->
+      <button
+        pButton
+        [icon]="'none'"
+        (click)="handleFullscreen()"
+        class="control-button"
+        [pTooltip]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+        tooltipPosition="top"
+      >
+        <lucide-icon
+          [img]="isFullscreen() ? Minimize : Maximize"
+          [size]="20"
+        ></lucide-icon>
+      </button>
+    </div>
+  </div>
+</div>
