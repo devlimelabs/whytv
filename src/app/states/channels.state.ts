@@ -19,6 +19,12 @@ export interface ChannelsState {
 
 /**
  * The signal store for managing channels
+ * 
+ * TEMPORARY: protectedState is set to false to allow direct state updates during initial development.
+ * This will be changed to protectedState: true in Phase 2 once all components
+ * have been refactored to use proper state update methods.
+ * 
+ * TODO: Phase 2 - Enable protectedState and refactor all direct state updates to use methods
  */
 export const ChannelsState = signalStore(
   { providedIn: 'root', protectedState: false },

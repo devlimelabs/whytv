@@ -1,3 +1,22 @@
+/**
+ * WhytvPlayerComponent - YouTube Player Integration
+ * 
+ * IMPORTANT: This component is an EXCEPTION to the no-direct-state-updates rule.
+ * 
+ * This component serves as the single source of truth for video player state and
+ * is authorized to update state directly using patchState because:
+ * 1. It's the only component that interacts with the YouTube Player API
+ * 2. It needs to sync player events with application state in real-time
+ * 3. It acts as the bridge between YouTube's event-driven API and our signal-based state
+ * 
+ * Pattern used here:
+ * - RxJS Observables: For event streams from VideoPlayerService (play$, pause$, volume$)
+ * - Signals: For reactive state management (playing, paused, muted states)
+ * - Direct patchState: Only in response to YouTube player events (onStateChange)
+ * 
+ * All other components should interact with the player through VideoPlayerService,
+ * never through direct state updates.
+ */
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,

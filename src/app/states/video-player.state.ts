@@ -16,6 +16,19 @@ type VideoPlayerState = {
   userIsActive: boolean;
 };
 
+/**
+ * Video Player State Store
+ * 
+ * TEMPORARY: protectedState is set to false to allow direct state updates.
+ * This will be changed to protectedState: true in Phase 2.
+ * 
+ * EXCEPTION: WhytvPlayerComponent is authorized to update this state directly
+ * because it serves as the single source of truth for YouTube player events.
+ * All other components must use VideoPlayerService methods to interact with the player.
+ * 
+ * TODO: Phase 2 - Enable protectedState and ensure only WhytvPlayerComponent 
+ * and VideoPlayerService can update state through proper methods.
+ */
 export const videoPlayerState = signalStore(
   {
     protectedState: false,

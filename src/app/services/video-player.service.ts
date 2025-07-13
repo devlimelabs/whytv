@@ -6,7 +6,30 @@ import { Subject } from 'rxjs';
 import { ChannelsState } from '../states/channels.state';
 import { videoPlayerState } from '../states/video-player.state';
 
-
+/**
+ * VideoPlayerService - Centralized Video Player Control
+ * 
+ * This service implements the RxJS Subject pattern for event coordination between
+ * components and the video player. This pattern is used because:
+ * 
+ * 1. Event Streams: Player control events (play, pause, seek) are inherently event-driven
+ * 2. Decoupling: Components can trigger player actions without direct player access
+ * 3. Observable Streams: The player component subscribes to these streams to execute commands
+ * 
+ * Pattern Guidelines:
+ * - Use RxJS Subjects/Observables for:
+ *   * Event coordination (play, pause, seek commands)
+ *   * Asynchronous operations
+ *   * Cross-component communication
+ * 
+ * - Use Signals for:
+ *   * Reactive state (playing, paused, muted states)
+ *   * Synchronous data that components need to react to
+ *   * UI state that drives template rendering
+ * 
+ * This service acts as the command center - components call methods here to control
+ * the player, and WhytvPlayerComponent subscribes to execute these commands.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -34,8 +57,11 @@ export class VideoPlayerService {
 
 
 
-  /* Video Control Event StreamMethods */
-
+  /* Video Control Event Stream Methods */
+  
+  /**
+   * Emit play command - WhytvPlayerComponent will execute
+   */
   play() {
     this.#play.next();
   }
@@ -64,6 +90,10 @@ export class VideoPlayerService {
     this.#quality.next(quality);
   }
 
+  /**
+   * State update callbacks - called by WhytvPlayerComponent after executing commands
+   * These methods update the signal state to reflect the actual player state
+   */
   onPlayed() {
     patchState(this.#videoPlayerStore, { playing: true, paused: false });
   }
