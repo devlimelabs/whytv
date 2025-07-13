@@ -1,100 +1,97 @@
-# Video Watching Application: State Architecture
+# WhyTV State Architecture
 
 ## Overview
 
-The Video Watching Application transforms how users discover and engage with YouTube content through AI-powered recommendations and a seamless viewing experience. Our state management architecture leverages Angular signals and @ngrx/signals to create a reactive, performant foundation that scales with the application's growth.
+WhyTV transforms how users discover and engage with YouTube content through AI-powered channel curation and a TV-like viewing experience. Our state management architecture leverages Angular signals and @ngrx/signals to create a reactive, performant foundation.
 
-The architecture divides state management into four distinct domains, each with a dedicated store and service layer to maintain clean separation of concerns while enabling powerful cross-domain interactions.
+The architecture uses three distinct state stores, each serving a specific purpose while maintaining clean separation of concerns.
 
-## Store & Service Responsibilities
+## Current Architecture (3 Stores)
 
-### User Store & Service
-
-**Store Responsibilities:**
-- Authentication state management (logged in status, user profile)
-- Personalization preferences (theme, content filters)
-- Watch history tracking
-- Favorite channels and videos
-
-**Service Responsibilities:**
-- User authentication flows
-- Profile management operations
-- History recording and retrieval
-- Preference setting validation and persistence
-
-The User domain forms the foundation of our personalized experience, enabling tailored content recommendations and viewing preferences that transform casual browsers into engaged viewers.
-
-### Channel Store & Service
+### ChannelsState (Store & Service)
 
 **Store Responsibilities:**
-- Channel directory/catalog management
-- Active channel state tracking
-- Channel metadata (thumbnails, subscriber count, descriptions)
-- Subscription status tracking
+- Channel catalog management (all channels with 'live' status)
+- Current channel selection tracking
+- Video collections for each channel
+- Current video index tracking within active channel
+- Channel metadata (name, number, description, AI model settings)
 
-**Service Responsibilities:**
-- Channel data fetching and caching
-- Subscription management
-- Channel search and filtering operations
-- Active channel selection and history
+**Service Responsibilities (ChannelService):**
+- Channel data fetching from Firestore
+- Channel creation and management
+- Current channel selection
+- Video navigation within channels
 
-The Channel domain creates an intuitive discovery layer that helps users navigate the vast YouTube ecosystem, highlighting trending creators and surfacing hidden gems through our intelligent categorization.
+**Key Design Decision:** Videos are embedded within channels rather than having their own store, simplifying the data model since videos always belong to a channel in our TV-like experience.
 
-### Video Store & Service
-
-**Store Responsibilities:**
-- Video catalog management by channel
-- Active/selected video tracking
-- Video metadata (duration, publication date, engagement metrics)
-- Channel-specific video collections
-- Video search results caching
-
-**Service Responsibilities:**
-- Video data retrieval and transformation
-- AI-assisted search operations
-- Video recommendation generation
-- Video selection operations
-- Managing video collections by channel
-
-The Video domain transforms content discovery through intelligent indexing and AI-powered suggestions that anticipate user interests before they even know what they're looking for.
-
-### Player Store & Service
+### videoPlayerState (Store & Service)
 
 **Store Responsibilities:**
-- Playback state (playing/paused/buffering)
-- Current playback position
-- Player settings (volume, playback speed, quality)
-- Fullscreen and theater mode states
-- Player dimension tracking
+- Playback state (playing/paused/buffering/ended)
+- Player settings (volume, muted state, playback speed)
+- Current video metadata (title, duration, current time)
+- UI visibility states (controls visibility, user activity)
+- Liked status for current video
 
-**Service Responsibilities:**
-- Player control event streams (play, pause, seek, etc.)
+**Service Responsibilities (VideoPlayerService):**
+- Player control event streams (play$, pause$, seek$, volume$, etc.)
 - YouTube API interaction abstraction
 - Player state synchronization
-- Settings persistence
-- Quality adaptation logic
+- Coordinating between components and player instance
 
-**Special Considerations:**
-- PlayerStateService exposes Subject (as Observable) for player controls
-- VideoPlayerComponent subscribes to these subjects to control YouTube player
-- Player emits state changes that directly update the store (exception to normal flow)
+**Special Pattern:** Uses RxJS Subjects as an event bus for player controls, allowing components to emit commands that the player component subscribes to.
 
-The Player domain creates a viewing experience that transcends the standard YouTube interface, with intelligent playback optimizations and seamless transitions that keep users immersed in their content journey.
+### UserActivityState (Class-based State)
+
+**State Responsibilities:**
+- User activity tracking (active/inactive)
+- Last activity timestamp
+- Inactivity timeout management
+
+**Service Responsibilities (UserActivityService):**
+- Activity detection and timeout logic
+- Emitting activity state changes
+- Managing the 3-second inactivity timer
+
+**Key Pattern:** Uses signalState with patchState for updates, exposes readonly signals for consumption.
 
 ## Data Flow Patterns
 
-1. **Standard Flow:** Components read from store signals and dispatch actions through services, which update the store
-2. **Cross-Domain Integration:** Complex features leverage data from multiple stores through composed selectors
-3. **Special Player Flow:** Two-way communication between player instance and store, with direct updates for performance
+### One-Way Data Flow (Critical)
+```
+User Action → Component → Service → Store → Component (via signals)
+```
 
-## Strategic Advantages
+**Important:** This one-way flow prevents circular updates that were causing issues in earlier implementations.
 
-This architecture creates several breakthrough advantages:
+### Current Implementation Details
 
-1. **Enhanced Performance:** Fine-grained reactivity through signals minimizes rendering overhead
-2. **Developer Velocity:** Clear domain boundaries streamline feature development
-3. **Scalability:** Domain-specific stores easily accommodate new features
-4. **Maintainability:** Predictable data flow simplifies debugging and refactoring
-5. **User Experience:** Responsive state updates create a fluid, native-feeling application
+1. **State Protection:** Currently using `protectedState: false` to allow direct updates (to be fixed in Phase 2)
+2. **Component Access:** Components inject both services and stores directly
+3. **Event Coordination:** VideoPlayerService acts as event coordinator between components
 
-Our state architecture doesn't just manage data—it enables the seamless, intuitive experience that will differentiate our video platform in a crowded marketplace.
+## Missing from Original Vision
+
+The original 4-domain architecture included a dedicated User Store for:
+- Authentication state
+- User preferences
+- Watch history
+- Favorites
+
+These features are not yet implemented but may be added in future phases.
+
+## Best Practices
+
+1. **Read from Stores:** Components should read state via store signals
+2. **Update via Services:** State changes should go through service methods
+3. **Avoid Direct Updates:** Don't use patchState directly in components (once protection is enabled)
+4. **Single Source of Truth:** Each piece of state should have one authoritative store
+
+## Future Considerations
+
+1. **Route-based State:** Plan to integrate channel/video selection with routing for shareable URLs
+2. **User Preferences:** May add a full UserStore when authentication is implemented
+3. **Performance:** Consider splitting video data into separate store if channel lists grow large
+
+This architecture provides a solid foundation while remaining pragmatic about current needs versus future scalability.
