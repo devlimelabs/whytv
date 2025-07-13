@@ -113,7 +113,22 @@ export class WhytvPlayerComponent implements AfterViewInit {
           this.videoPlayerSvc.onUnmuted();
         }
       });
+
+    // Subscribe to playback rate changes
+    this.videoPlayerSvc.rate$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((rate) => {
+        this.youtubePlayer()?.setPlaybackRate(rate);
+      });
+
+    // Subscribe to seek commands
+    this.videoPlayerSvc.seek$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((time) => {
+        this.youtubePlayer()?.seekTo(time, true);
+      });
   }
+  
   ngAfterViewInit() {
     // Initial setup
 

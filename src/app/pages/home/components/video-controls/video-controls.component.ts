@@ -135,8 +135,11 @@ export class VideoControlsComponent {
 
   handleMute() {
     if (this.muted()) {
-      this.videoPlayerService.volume(this.volume());
+      // Unmute - restore previous volume or default to 50
+      const volumeToRestore = this.volume() > 0 ? this.volume() : 50;
+      this.videoPlayerService.volume(volumeToRestore);
     } else {
+      // Mute - set volume to 0
       this.videoPlayerService.volume(0);
     }
   }

@@ -3,11 +3,13 @@
   bottom: 100px; /* Position above the carousel */
   left: 0;
   right: 0;
-  z-index: 100; /* Above the video player but below side actions */
+  z-index: 50; /* Above the video player but below carousel */
   display: block;
+  pointer-events: none; /* Allow clicks to pass through except on controls */
 }
 
 .video-controls {
+  pointer-events: auto; /* Re-enable pointer events on actual controls */
   padding: 0 20px 20px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   transition: opacity 0.3s ease;
