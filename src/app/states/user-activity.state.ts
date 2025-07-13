@@ -24,21 +24,17 @@ export class UserActivityState {
 
   // Method to update user activity status
   setActive(isActive: boolean): void {
-    console.log('Setting active state:', isActive); // Debug log
     patchState(this.state, {
       isActive,
       lastActivityTime: isActive ? Date.now() : this.state.lastActivityTime()
     });
-    console.log('State after update:', this.state()); // Debug log
   }
 
   // Method to update last activity time
   updateLastActivityTime(): void {
-    console.log('Updating last activity time'); // Debug log
     patchState(this.state, {
       isActive: true,
       lastActivityTime: Date.now()
     });
-    console.log('State after update:', this.state()); // Debug log
   }
 }

@@ -77,7 +77,6 @@ export class SideActionsComponent implements OnInit {
     this.userActivitySvc.activity$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(isActive => {
-        console.log('Side actions received activity event:', isActive);
         patchState(this.state, { isUserActive: isActive });
       });
   }
@@ -158,7 +157,6 @@ export class SideActionsComponent implements OnInit {
     // Use the channel service to open the dialog
     this.channelSvc.openCreateChannelDialog().then(result => {
       // Handle the result if needed
-      console.log('Dialog closed with result:', result);
     });
   }
 

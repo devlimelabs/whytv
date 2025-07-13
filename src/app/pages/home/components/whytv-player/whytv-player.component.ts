@@ -103,11 +103,9 @@ export class WhytvPlayerComponent implements AfterViewInit {
   }
 
   onPlaybackQualityChange(event: YT.OnPlaybackQualityChangeEvent) {
-    console.log('Playback quality changed', event);
   }
 
   onPlaybackRateChange(event: YT.OnPlaybackRateChangeEvent) {
-    console.log('Playback rate changed', event);
   }
 
   onPlayerReady(event: YT.PlayerEvent) {
@@ -130,12 +128,8 @@ export class WhytvPlayerComponent implements AfterViewInit {
       '3': 'BUFFERING',
       '5': 'CUED'
     };
-    console.log(`Player state changed to ${stateNames[event.data] || event.data}`);
-
     switch (event.data) {
       case YT.PlayerState.PLAYING:
-        console.log('Video is now playing');
-
         this.startProgressTimer();
 
         patchState(this.videoPlayerState, {
@@ -146,8 +140,6 @@ export class WhytvPlayerComponent implements AfterViewInit {
         break;
 
       case YT.PlayerState.PAUSED:
-        console.log('Video is now paused');
-
         this.stopProgressTimer();
 
         patchState(this.videoPlayerState, {
@@ -158,29 +150,22 @@ export class WhytvPlayerComponent implements AfterViewInit {
         break;
 
       case YT.PlayerState.ENDED:
-        console.log('Video has ended');
-
        // get next video
        this.channelSvc.nextVideo();
 
         break;
 
       case YT.PlayerState.BUFFERING:
-        console.log('Video is buffering');
         break;
 
       case YT.PlayerState.CUED:
-        console.log('Video is cued and ready to play');
-
         break;
 
       case YT.PlayerState.UNSTARTED:
-        console.log('Video is unstarted - attempting to play');
         setTimeout(() => {
           try {
             this.youtubePlayer()?.playVideo();
           } catch (error) {
-            console.error('Error playing from unstarted state:', error);
           }
         }, 300);
         break;
@@ -192,7 +177,6 @@ export class WhytvPlayerComponent implements AfterViewInit {
    * @param event The YouTube player error event
    */
   onError(event: YT.OnErrorEvent): void {
-    console.error('Player error', event);
     let errorMessage = 'An error occurred with the YouTube player';
 
     // Use the correct PlayerError type from the official API
@@ -214,7 +198,6 @@ export class WhytvPlayerComponent implements AfterViewInit {
   }
 
   onPlayerApi(event: YT.PlayerEvent) {
-    console.log('Player API event', event);
   }
 
   startProgressTimer() {

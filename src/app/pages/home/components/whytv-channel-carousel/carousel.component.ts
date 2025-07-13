@@ -108,7 +108,6 @@ export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
     this.userActivitySvc.activity$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(isActive => {
-        console.log('Carousel received activity event:', isActive);
         patchState(this.state, { isUserActive: isActive });
       });
   }

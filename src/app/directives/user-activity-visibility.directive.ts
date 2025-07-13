@@ -31,7 +31,6 @@ export class UserActivityVisibilityDirective implements OnInit {
     // Create an effect to react to activity state changes
     effect(() => {
       const isActive = this.userActivityState.isActive();
-      console.log('Activity state changed:', isActive); // Debug log
       this.updateVisibility(isActive);
     });
   }
@@ -39,8 +38,6 @@ export class UserActivityVisibilityDirective implements OnInit {
   private updateVisibility(isActive: boolean): void {
     // Determine if element should be visible based on activity state and invert setting
     const shouldBeVisible = this.invertBehavior ? !isActive : isActive;
-
-    console.log('Updating visibility:', shouldBeVisible); // Debug log
 
     if (shouldBeVisible) {
       this.renderer.removeClass(this.el.nativeElement, this.inactiveClass);

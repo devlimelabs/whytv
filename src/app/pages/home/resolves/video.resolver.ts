@@ -19,8 +19,5 @@ export const videoResolver: ResolveFn<Video | undefined> = (route, state) => {
     video = channel?.videos[0];
   }
 
-  console.log(video);
-
-
   return video;
 };

@@ -13,7 +13,6 @@ import { UserActivityState } from '../states/user-activity.state';
 export function initUserActivity(): Promise<boolean> {
   // Inject and initialize the service
   const service = inject(UserActivityService);
-  console.log('UserActivityService initialized');
 
   // Return a resolved promise to indicate successful initialization
   return Promise.resolve(true);
@@ -37,7 +36,6 @@ export class UserActivityService {
   private readonly INACTIVITY_TIMEOUT = 3000;
 
   constructor() {
-    console.log('UserActivityService constructor called');
     this.initInactivityTimer();
   }
 
@@ -45,8 +43,6 @@ export class UserActivityService {
    * Initialize the inactivity timer
    */
   private initInactivityTimer(): void {
-    console.log('Initializing inactivity timer');
-
     // Set up the inactivity timer
     this.resetSubject.pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -55,7 +51,6 @@ export class UserActivityService {
       ))
     ).subscribe(() => {
       // When the timer completes without being reset, mark user as inactive
-      console.log('Inactivity timeout reached, setting inactive state');
       this.setInactive();
     });
   }
@@ -64,7 +59,6 @@ export class UserActivityService {
    * Manually trigger user activity (called from app component on user interaction)
    */
   triggerActivity(): void {
-    console.log('Activity triggered');
     this.setActive();
     this.resetSubject.next();
   }
