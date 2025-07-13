@@ -83,12 +83,8 @@ export class SideActionsComponent implements OnInit {
 
   // Helper method to update user activity in the state
   private markUserActive(): void {
-    // Update both the player state and the user activity state
-    patchState(this.playerState, {
-      userIsActive: true,
-      showControls: true,
-      hideUIOverlays: false
-    });
+    // Update the player state through the service
+    this.videoPlayerSvc.setUserActive();
 
     // Trigger activity in the user activity service
     this.userActivitySvc.triggerActivity();
@@ -97,9 +93,8 @@ export class SideActionsComponent implements OnInit {
   handleLikeToggle(event: MouseEvent) {
     event.preventDefault();
     this.markUserActive();
-    patchState(this.playerState, {
-      liked: !this.playerState.liked()
-    });
+    // Use the service method to toggle liked state
+    this.videoPlayerSvc.toggleLiked();
   }
 
   handleMuteToggle(event: MouseEvent) {

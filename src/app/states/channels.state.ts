@@ -27,7 +27,7 @@ export interface ChannelsState {
  * TODO: Phase 2 - Enable protectedState and refactor all direct state updates to use methods
  */
 export const ChannelsState = signalStore(
-  { providedIn: 'root', protectedState: false },
+  { providedIn: 'root', protectedState: true },
   withState<ChannelsState>({
     channels: [],
     currentChannel: null,

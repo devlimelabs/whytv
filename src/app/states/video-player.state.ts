@@ -31,7 +31,7 @@ type VideoPlayerState = {
  */
 export const videoPlayerState = signalStore(
   {
-    protectedState: false,
+    protectedState: true,
     providedIn: 'root'
   },
   withState<VideoPlayerState>({

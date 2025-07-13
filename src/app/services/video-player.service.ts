@@ -109,4 +109,23 @@ export class VideoPlayerService {
   onUnmuted() {
     patchState(this.#videoPlayerStore, { muted: false });
   }
+
+  /**
+   * Toggle the liked state of the current video
+   */
+  toggleLiked() {
+    const currentLikedState = this.#videoPlayerStore.liked();
+    patchState(this.#videoPlayerStore, { liked: !currentLikedState });
+  }
+
+  /**
+   * Set the user as active and update related UI states
+   */
+  setUserActive() {
+    patchState(this.#videoPlayerStore, {
+      userIsActive: true,
+      showControls: true,
+      hideUIOverlays: false
+    });
+  }
 }
