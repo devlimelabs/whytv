@@ -60,3 +60,22 @@ body .p-dropdown-panel {
   width: 100%;
   display: block;
 }
+
+/* Fullscreen fixes to eliminate black gaps */
+:fullscreen {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: black !important;
+  overflow: hidden !important;
+}
+
+:fullscreen html,
+:fullscreen body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}

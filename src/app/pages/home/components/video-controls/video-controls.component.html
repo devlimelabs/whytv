@@ -1,4 +1,8 @@
-<div class="video-controls" appUserActivityVisibility>
+<div 
+  class="video-controls"
+  [style.--bottom-position]="bottomPosition()"
+  [style.--mobile-bottom-position]="mobileBottomPosition()"
+>
   <!-- Progress Bar Container -->
   <div class="progress-container">
     <!-- Buffered Progress -->

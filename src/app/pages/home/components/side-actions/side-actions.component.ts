@@ -19,6 +19,7 @@ import {
 import { ToastModule } from 'primeng/toast';
 
 import { ChannelService } from '../../../../services/channel/channel.service';
+import { UIStateService } from '../../../../services/ui-state.service';
 import { UserActivityService } from '../../../../services/user-activity.service';
 import { VideoPlayerService } from '../../../../services/video-player.service';
 import { UserActivityState } from '../../../../states/user-activity.state';
@@ -45,6 +46,7 @@ export class SideActionsComponent implements OnInit {
   readonly channelSvc = inject(ChannelService);
   readonly userActivitySvc = inject(UserActivityService);
   readonly userActivityState = inject(UserActivityState);
+  readonly uiState = inject(UIStateService);
   readonly destroyRef = inject(DestroyRef);
 
   // State
@@ -52,7 +54,6 @@ export class SideActionsComponent implements OnInit {
 
   // Local component state
   state = signalState({
-    carouselVisible: false,
     isUserActive: true
   });
 
@@ -138,9 +139,7 @@ export class SideActionsComponent implements OnInit {
   handleToggleCarousel(event: MouseEvent) {
     event.preventDefault();
     this.markUserActive();
-    patchState(this.state, {
-      carouselVisible: !this.state().carouselVisible
-    });
+    this.uiState.toggleCarousel();
   }
 
   handleCreateChannel(event: MouseEvent) {
@@ -158,6 +157,11 @@ export class SideActionsComponent implements OnInit {
     this.markUserActive();
     // TODO: Implement channel rail toggle functionality
     // This should be managed through a proper service or state management
+  }
+
+  // Check if we're in fullscreen and user is inactive
+  isFullscreenInactive(): boolean {
+    return !!document.fullscreenElement && !this.state().isUserActive;
   }
 
   ngOnInit(): void {

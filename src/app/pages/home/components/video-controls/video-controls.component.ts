@@ -21,7 +21,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { videoPlayerState } from '../../../../states/video-player.state';
 import { ChannelsState } from '../../../../states/channels.state';
 import { VideoPlayerService } from '../../../../services/video-player.service';
-import { UserActivityVisibilityDirective } from '../../../../directives/user-activity-visibility.directive';
+import { UIStateService } from '../../../../services/ui-state.service';
 
 @Component({
   selector: 'app-video-controls',
@@ -33,8 +33,7 @@ import { UserActivityVisibilityDirective } from '../../../../directives/user-act
     SliderModule,
     SelectModule,
     TooltipModule,
-    LucideAngularModule,
-    UserActivityVisibilityDirective
+    LucideAngularModule
   ],
   templateUrl: './video-controls.component.html',
   styleUrl: './video-controls.component.css',
@@ -44,6 +43,7 @@ export class VideoControlsComponent {
   private videoPlayerService = inject(VideoPlayerService);
   private playerState = inject(videoPlayerState);
   private channelsState = inject(ChannelsState);
+  private uiState = inject(UIStateService);
   private destroyRef = inject(DestroyRef);
 
   // Icons
@@ -61,6 +61,16 @@ export class VideoControlsComponent {
   paused = this.playerState.paused;
   muted = this.playerState.muted;
   currentVideo = computed(() => this.channelsState.currentVideo());
+  
+  // Dynamic positioning based on carousel visibility
+  bottomPosition = computed(() => 
+    this.uiState.carouselVisible() ? '100px' : '0px'
+  );
+  
+  // Mobile bottom position (smaller offset when carousel is visible)
+  mobileBottomPosition = computed(() => 
+    this.uiState.carouselVisible() ? '80px' : '0px'
+  );
 
   // Local state for controls
   currentTime = signal(0);

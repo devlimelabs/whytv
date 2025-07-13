@@ -11,3 +11,18 @@
 .animate-bounce {
   animation: bounce 2.5s infinite ease-in-out;
 }
+
+/* Fullscreen layout fixes */
+:fullscreen .main-page-container {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:fullscreen #main-container {
+  height: 100vh !important;
+  width: 100vw !important;
+}

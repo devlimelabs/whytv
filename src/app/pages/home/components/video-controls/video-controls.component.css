@@ -1,16 +1,17 @@
 :host {
   position: absolute;
-  bottom: 100px; /* Position above the carousel */
+  bottom: var(--bottom-position, 100px); /* Dynamic position based on carousel visibility */
   left: 0;
   right: 0;
   z-index: 50; /* Above the video player but below carousel */
   display: block;
   pointer-events: none; /* Allow clicks to pass through except on controls */
+  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth transition */
 }
 
 .video-controls {
   pointer-events: auto; /* Re-enable pointer events on actual controls */
-  padding: 0 20px 20px;
+  padding: 0 80px 20px 20px; /* Extra right padding to avoid side actions overlap */
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   transition: opacity 0.3s ease;
 }
@@ -100,21 +101,42 @@
 .volume-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  position: relative;
+  padding: 5px;
+  min-width: 120px; /* Ensure consistent space */
 }
 
 .volume-slider-container {
   width: 0;
-  overflow: hidden;
-  transition: width 0.3s ease;
+  overflow: visible; /* Changed from hidden to allow easier access */
+  transition: width 0.2s ease;
+  opacity: 0;
+  transition: width 0.2s ease, opacity 0.2s ease;
 }
 
+/* Show slider on hover with proper delays */
 .volume-controls:hover .volume-slider-container {
-  width: 100px;
+  width: 80px;
+  opacity: 1;
+  transition-delay: 0.1s; /* Small delay to show */
+}
+
+/* Keep slider visible when hovering over it */
+.volume-slider-container:hover {
+  width: 80px !important;
+  opacity: 1 !important;
+  transition-delay: 0s;
+}
+
+/* Hide with delay when leaving volume controls area */
+.volume-controls:not(:hover) .volume-slider-container:not(:hover) {
+  transition-delay: 0.8s; /* Longer delay before hiding */
 }
 
 .volume-slider {
-  width: 100px;
+  width: 80px;
+  height: 20px; /* Bigger click area */
 }
 
 /* Time Display */
@@ -238,11 +260,12 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
   :host {
-    bottom: 80px; /* Less space on mobile */
+    /* Mobile uses dynamic positioning with reduced offset when carousel is visible */
+    bottom: var(--mobile-bottom-position, 80px);
   }
 
   .video-controls {
-    padding: 0 10px 10px;
+    padding: 0 70px 10px 10px; /* Adjusted right padding for mobile */
   }
 
   .controls-bar {

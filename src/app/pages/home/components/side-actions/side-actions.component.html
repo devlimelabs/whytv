@@ -8,13 +8,13 @@
     'translate-x-20': initialAnimation(),
     'translate-x-0':
       !initialAnimation() &&
-      !state().carouselVisible &&
+      !uiState.carouselVisible() &&
       !playerState.hideUIOverlays(),
     'translate-x-[-280px]':
-      state().carouselVisible && !playerState.hideUIOverlays(),
+      uiState.carouselVisible() && !playerState.hideUIOverlays(),
     'translate-x-hidden': playerState.hideUIOverlays(),
-    'opacity-0': !state().isUserActive,
-    'opacity-100': state().isUserActive
+    'opacity-0': !state().isUserActive || isFullscreenInactive(),
+    'opacity-100': state().isUserActive && !isFullscreenInactive()
   }"
   style="transition: opacity 0.5s ease-in-out"
 >
@@ -22,17 +22,17 @@
   <button
     class="p-2 transition-transform hover:scale-125 cursor-pointer tooltip flex-shrink-0"
     [attr.aria-label]="
-      state().carouselVisible ? 'Close Video List' : 'Open Video List'
+      uiState.carouselVisible() ? 'Close Video List' : 'Open Video List'
     "
     [attr.data-tooltip]="
-      state().carouselVisible ? 'Close Video List' : 'Open Video List'
+      uiState.carouselVisible() ? 'Close Video List' : 'Open Video List'
     "
     (click)="handleToggleCarousel($event)"
     [ngClass]="{
-      'bg-black/30 backdrop-blur-sm rounded-full': state().carouselVisible
+      'bg-black/30 backdrop-blur-sm rounded-full': uiState.carouselVisible()
     }"
   >
-    @if (state().carouselVisible) {
+    @if (uiState.carouselVisible()) {
     <lucide-icon [img]="X" class="w-8 h-8 text-white" />
     } @else {
     <lucide-icon [img]="List" class="w-8 h-8 text-white" />
@@ -127,8 +127,8 @@
   [ngClass]="{
     'translate-y-10': playerState.hideUIOverlays(),
     'translate-y-0': !playerState.hideUIOverlays(),
-    'opacity-0': !state().isUserActive,
-    'opacity-100': state().isUserActive
+    'opacity-0': !state().isUserActive || isFullscreenInactive(),
+    'opacity-100': state().isUserActive && !isFullscreenInactive()
   }"
   style="transition: opacity 0.5s ease-in-out"
 >
