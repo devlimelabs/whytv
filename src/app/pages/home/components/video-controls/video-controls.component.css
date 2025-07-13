@@ -11,7 +11,7 @@
 
 .video-controls {
   pointer-events: auto; /* Re-enable pointer events on actual controls */
-  padding: 0 80px 20px 20px; /* Extra right padding to avoid side actions overlap */
+  padding: 0 20px 20px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   transition: opacity 0.3s ease;
 }
@@ -64,6 +64,7 @@
   justify-content: space-between;
   gap: 20px;
   color: white;
+  margin-right: 60px; /* Space for side actions without affecting button click areas */
 }
 
 .controls-left,
@@ -103,35 +104,21 @@
   align-items: center;
   gap: 8px;
   position: relative;
-  padding: 5px;
+  padding: 8px;
   min-width: 120px; /* Ensure consistent space */
 }
 
 .volume-slider-container {
   width: 0;
-  overflow: visible; /* Changed from hidden to allow easier access */
-  transition: width 0.2s ease;
+  overflow: hidden;
   opacity: 0;
-  transition: width 0.2s ease, opacity 0.2s ease;
+  transition: width 0.3s ease, opacity 0.3s ease;
 }
 
-/* Show slider on hover with proper delays */
+/* Simple hover logic - show slider on hover */
 .volume-controls:hover .volume-slider-container {
   width: 80px;
   opacity: 1;
-  transition-delay: 0.1s; /* Small delay to show */
-}
-
-/* Keep slider visible when hovering over it */
-.volume-slider-container:hover {
-  width: 80px !important;
-  opacity: 1 !important;
-  transition-delay: 0s;
-}
-
-/* Hide with delay when leaving volume controls area */
-.volume-controls:not(:hover) .volume-slider-container:not(:hover) {
-  transition-delay: 0.8s; /* Longer delay before hiding */
 }
 
 .volume-slider {
@@ -265,11 +252,12 @@
   }
 
   .video-controls {
-    padding: 0 70px 10px 10px; /* Adjusted right padding for mobile */
+    padding: 0 10px 10px;
   }
 
   .controls-bar {
     gap: 10px;
+    margin-right: 50px; /* Reduced margin for mobile */
   }
 
   .controls-left,

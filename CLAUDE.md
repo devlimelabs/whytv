@@ -1,3 +1,5 @@
+You are an expert in TypeScript, Angular, and scalable web application development. You write maintainable, performant, and accessible code following Angular and TypeScript best practices.
+
 # WhyTV Development Guide
 
 ## Project Overview
@@ -14,19 +16,13 @@ WhyTV is a web application that provides a TV-like experience for watching YouTu
   - `cd functions && npm run serve` - Start Firebase emulators
   - `cd functions && npm run lint` - Lint Firebase functions
 
-## Code related documentation can be found in the [docs directory](./docs/) 
+## Documentation Guide
 
-## Code Style Guidelines
-- **Component Structure**: Use standalone components with OnPush change detection
-- **State Management**: Use Angular signals and [@ngrx/signalStore](./docs/ngrx-signal-store/index.md)
-- **Async Code**: Prefer async/await over direct Observable usage
-- **Utility Functions**: Use lodash over native array/object methods
-- **Modules**: Never use Angular Modules, only standalone components
-- **Routing**: Use static routes files, always lazy-load non-primary routes
-- **Files**: Separate HTML, CSS, and TS into individual files
-- **Reactivity**: Always use signals and signal-based functions (input(), output())
-- **Imports**: Group imports logically (Angular core, libraries, project)
-- **Error Handling**: Use try/catch with consistent error logging pattern
+- **Coding Standards**: See [CODING_STANDARDS](./CODING_STANDARDS/) directory for universal Angular/TypeScript standards
+- **Quick Reference**: [Angular Cheat Sheet](./CODING_STANDARDS/angular-cheat-sheet.md) with law codes
+- **Navigation Guide**: [Documentation Map](./CODING_STANDARDS/documentation-map.md) for finding information
+- **Library References**: See [docs directory](./docs/) for external library documentation
+- **Project Overrides**: [Project-specific deviations](./CODING_STANDARDS/project-overrides.md) from standards
 
 ## Current State & Known Issues
 
@@ -51,7 +47,7 @@ WhyTV is a web application that provides a TV-like experience for watching YouTu
 
 ## State Management Patterns (CRITICAL)
 
-### The One-Way Data Flow Rule
+### The One-Way Data Flow Rule [CS-S01]
 **ALWAYS follow this pattern to prevent circular updates:**
 ```
 User Action → Component → Service Method → Store Update → Component (via signals)
@@ -59,7 +55,7 @@ User Action → Component → Service Method → Store Update → Component (via
 
 ### ✅ CORRECT Patterns
 
-#### Reading State in Components
+#### Reading State in Components [CS-S02]
 ```typescript
 // GOOD: Read from store signals
 export class MyComponent {
@@ -75,7 +71,7 @@ export class MyComponent {
 }
 ```
 
-#### Updating State via Services
+#### Updating State via Services [CS-S03]
 ```typescript
 // GOOD: Update through service methods
 export class MyComponent {
@@ -187,7 +183,7 @@ export class SideActionsComponent {
 Firebase → FirestoreService → ChannelService → ChannelsState → Components
 
 ### Video Playback
-User Action → VideoPlayerService (RxJS subjects) → WhytvPlayerComponent → videoPlayerState
+User Action (outside of player component) → VideoPlayerService (RxJS subjects) → WhytvPlayerComponent → videoPlayerState
 
 ### User Activity
 User Interaction → UserActivityService → userActivity$ observable → UI visibility
@@ -197,3 +193,58 @@ Channel creation follows this status progression:
 `new` → `processing queries` → `queries ready` → `select_videos` → `videos_selected` → `created`
 
 Each function updates the status to trigger the next function in the chain.
+
+## WhyTV State Architecture
+
+### Overview [CS-S04]
+WhyTV uses three distinct state stores with Angular signals and @ngrx/signals, each serving a specific purpose while maintaining clean separation of concerns.
+
+### Current Architecture (3 Stores)
+
+#### ChannelsState (Store & Service)
+**Store Responsibilities:**
+- Channel catalog management (all channels with 'live' status)
+- Current channel selection tracking
+- Video collections for each channel
+- Current video index tracking within active channel
+- Channel metadata (name, number, description, AI model settings)
+
+**Service (ChannelService):** [CS-S05]
+- Channel data fetching from Firestore
+- Channel creation and management
+- Current channel selection
+- Video navigation within channels
+
+**Key Design:** Videos are embedded within channels rather than having their own store, simplifying the data model since videos always belong to a channel.
+
+#### videoPlayerState (Store & Service)
+**Store Responsibilities:**
+- Playback state (playing/paused/buffering/ended)
+- Player settings (volume, muted state, playback speed)
+- Current video metadata (title, duration, current time)
+- UI visibility states (controls visibility, user activity)
+- Liked status for current video
+
+**Service (VideoPlayerService):**
+- Player control event streams (play$, pause$, seek$, volume$, etc.)
+- YouTube API interaction abstraction
+- Player state synchronization
+- Coordinating between components and player instance
+
+**Special Pattern:** Uses RxJS Subjects as an event bus for player controls, allowing components to emit commands that the player component subscribes to.
+
+#### UserActivityState (Signal-based State)
+**State Responsibilities:**
+- User activity tracking (active/inactive)
+- Last activity timestamp
+- Inactivity timeout management
+
+**Service (UserActivityService):**
+- Activity detection and timeout logic
+- Emitting activity state changes
+- Managing the 3-second inactivity timer
+
+### Implementation Notes
+- Currently using `protectedState: false` to allow direct updates (temporary)
+- Components inject both services and stores directly
+- VideoPlayerService acts as event coordinator between components

@@ -4,6 +4,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
 import { SpeedDialModule } from 'primeng/speeddial';
 
+import { UIStateService } from '../../services/ui-state.service';
 import { ChannelsState } from '../../states/channels.state';
 import { videoPlayerState } from '../../states/video-player.state';
 import { SideActionsComponent } from './components/side-actions/side-actions.component';
@@ -27,6 +28,7 @@ import { WhytvPlayerComponent } from './components/whytv-player/whytv-player.com
 export class HomePage {
   readonly playerState = inject(videoPlayerState);
   readonly channelsState = inject(ChannelsState);
+  readonly uiState = inject(UIStateService);
 
 
 

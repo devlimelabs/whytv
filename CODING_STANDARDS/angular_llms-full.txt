@@ -1,5 +1,3 @@
-
-
 <big style="margin-top: 2em">
 Angular is a web framework that empowers developers to build fast, reliable applications.
 </big>
@@ -103,10 +101,6 @@ NOTE: Raw file sizes do not reflect development server per-request transformatio
 ```
 
 And now you can visit the path in `Local` (e.g., `http://localhost:4200`) to see your application. Happy coding! 🎉
-
-### Using AI for Development
-
-To get started with building in your preferred AI powered IDE, [check out Angular prompt rules and best practices](/ai/develop-with-ai).
 
 ## Next steps
 
@@ -335,8 +329,7 @@ Prefer `class` and `style` bindings over using the `NgClass` and `NgStyle` direc
 ```html
 <!-- PREFER -->
 <div [class.admin]="isAdmin" [class.dense]="density === 'high'">
-<!-- OR -->
-<div [class]="{admin: isAdmin, dense: density === 'high'}">
+
 <!-- AVOID -->
 <div [ngClass]="{admin: isAdmin, dense: density === 'high'}">
 ```
@@ -484,7 +477,7 @@ export class UserProfile {
 
 ```html
 <!-- user-profile.html -->
-<h1>User profile</h1>
+<h1>Use profile</h1>
 <p>This is the user profile page</p>
 ```
 
@@ -2743,9 +2736,9 @@ Angular's compiler produces a [dynamic import](https://developer.mozilla.org/en-
 
 ### `@defer`
 
-This is the primary block that defines the section of content that is lazily loaded. It is not rendered initially– deferred content loads and renders once the specified [trigger](/guide/templates/defer#triggers) occurs or the `when` condition is met.
+This is the primary block that defines the section of content that is lazily loaded. It is not rendered initially– deferred content loads and renders once the specified [trigger](/guide/defer#triggers) occurs or the `when` condition is met.
 
-By default, a @defer block is triggered when the browser state becomes [idle](/guide/templates/defer#idle).
+By default, a @defer block is triggered when the browser state becomes [idle](/guide/defer#idle).
 
 ```html
 @defer {
@@ -2767,7 +2760,7 @@ The `@placeholder` is an optional block that declares what content to show befor
 }
 ```
 
-While optional, certain triggers may require the presence of either a `@placeholder` or a [template reference variable](/guide/templates/variables#template-reference-variables) to function. See the [Triggers](/guide/templates/defer#triggers) section for more details.
+While optional, certain triggers may require the presence of either a `@placeholder` or a [template reference variable](/guide/templates/variables#template-reference-variables) to function. See the [Triggers](/guide/defer#triggers) section for more details.
 
 Angular replaces placeholder content with the main content once loading is complete. You can use any content in the placeholder section including plain HTML, components, directives, and pipes. Keep in mind the _dependencies of the placeholder block are eagerly loaded_.
 
@@ -3067,12 +3060,14 @@ Angular supports a subset of [literal values](https://developer.mozilla.org/en-U
 | Array                  | `['Onion', 'Cheese', 'Garlic']` |
 | null                   | `null`                          |
 | Template string        | `` `Hello ${name}` ``           |
+| Tagged template string | `` tag`Hello ${name}` ``        |
 
 ### Unsupported literals
 
 | Literal type           | Example value            |
 | ---------------------- | ------------------------ |
 | RegExp                 | `/\d+/`                  |
+| Tagged template string | `` tag`Hello ${name}` `` |
 
 ## Globals
 
@@ -3095,34 +3090,27 @@ For example, `@for` blocks make several local variables corresponding to informa
 
 Angular supports the following operators from standard JavaScript.
 
-| Operator                        | Example(s)                               |
-| ------------------------------- | ---------------------------------------- |
-| Add / Concatenate               | `1 + 2`                                  |
-| Subtract                        | `52 - 3`                                 |
-| Multiply                        | `41 * 6`                                 |
-| Divide                          | `20 / 4`                                 |
-| Remainder (Modulo)              | `17 % 5`                                 |
-| Exponentiation                  | `10 ** 3`                                |
-| Parenthesis                     | `9 * (8 + 4)`                            |
-| Conditional (Ternary)           | `a > b ? true : false`                   |
-| And (Logical)                   | `&&`                                     |
-| Or (Logical)                    | `\|\|`                                   |
-| Not (Logical)                   | `!`                                      |
-| Nullish Coalescing              | `possiblyNullValue ?? 'default'`         |
-| Comparison Operators            | `<`, `<=`, `>`, `>=`, `==`, `===`, `!==` |
-| Unary Negation                  | `-x`                                     |
-| Unary Plus                      | `+y`                                     |
-| Property Accessor               | `person['name']`                         |
-| Assignment                      | `a = b`                                  |
-| Addition Assignment             | `a += b`                                 |
-| Subtraction Assignment          | `a -= b`                                 |
-| Multiplication Assignment       | `a *= b`                                 |
-| Division Assignment             | `a /= b`                                 |
-| Remainder Assignment            | `a %= b`                                 |
-| Exponentiation Assignment       | `a **= b`                                |
-| Logical AND Assignment          | `a &&= b`                                |
-| Logical OR Assignment           | `a \|\|= b`                              |
-| Nullish Coalescing Assignment   | `a ??= b`                                |
+| Operator              | Example(s)                               |
+| --------------------- | ---------------------------------------- |
+| Add / Concatenate     | `1 + 2`                                  |
+| Subtract              | `52 - 3`                                 |
+| Multiply              | `41 * 6`                                 |
+| Divide                | `20 / 4`                                 |
+| Remainder (Modulo)    | `17 % 5`                                 |
+| Exponentiation        | `10 ** 3`                                |
+| Parenthesis           | `9 * (8 + 4)`                            |
+| Conditional (Ternary) | `a > b ? true : false`                   |
+| And (Logical)         | `&&`                                     |
+| Or (Logical)          | `\|\|`                                   |
+| Not (Logical)         | `!`                                      |
+| Nullish Coalescing    | `possiblyNullValue ?? 'default'`         |
+| Comparison Operators  | `<`, `<=`, `>`, `>=`, `==`, `===`, `!==` |
+| Unary Negation        | `-x`                                     |
+| Unary Plus            | `+y`                                     |
+| Property Accessor     | `person['name']`                         |
+| typeof                | `typeof 42`                              |
+| void                  | `void 1`                                 |
+| in                    | `'model' in car`                         |
 
 Angular expressions additionally also support the following non-standard operators:
 
@@ -3139,9 +3127,13 @@ NOTE: Optional chaining behaves differently from the standard JavaScript version
 | Operator              | Example(s)                        |
 | --------------------- | --------------------------------- |
 | All bitwise operators | `&`, `&=`, `~`, `\|=`, `^=`, etc. |
+| Assignment operators  | `=`                               |
 | Object destructuring  | `const { name } = person`         |
 | Array destructuring   | `const [firstItem] = items`       |
 | Comma operator        | `x = (x++, x)`                    |
+| in                    | `'model' in car`                  |
+| typeof                | `typeof 42`                       |
+| void                  | `void 1`                          |
 | instanceof            | `car instanceof Automobile`       |
 | new                   | `new Car()`                       |
 
@@ -3411,13 +3403,13 @@ export class SelectDirective {
 
 </docs-step>
 <docs-step title="Add the 'selectFrom' input">
-Add a `selectFrom` `input()` property.
+Add a `selectFrom` `@Input()` property.
 
 ```ts
 export class SelectDirective {
   // ...
 
-  selectFrom = input.required<DataSource>();
+  @Input({required: true}) selectFrom!: DataSource;
 }
 ```
 
@@ -3519,9 +3511,9 @@ To narrow the input expression by defining a type assertion function:
 // expression is narrowed to `User`.
 @Directive(...)
 class ActorIsUser {
-  actor = input<User | Robot>();
+  @Input() actor: User|Robot;
 
-  static ngTemplateGuard_actor(dir: ActorIsUser, expr: User | Robot): expr is User {
+  static ngTemplateGuard_actor(dir: ActorIsUser, expr: User|Robot): expr is User {
     // The return statement is unnecessary in practice, but included to
     // prevent TypeScript errors.
     return true;
@@ -3536,7 +3528,7 @@ Some directives only render their templates when an input is truthy. It's not po
 ```ts
 @Directive(...)
 class CustomIf {
-  condition = input.required<boolean>();
+  @Input() condition!: any;
 
   static ngTemplateGuard_condition: 'binding';
 }
@@ -3560,7 +3552,7 @@ export interface SelectTemplateContext<T> {
 export class SelectDirective<T> {
   // The directive's generic type `T` will be inferred from the `DataSource` type
   // passed to the input.
-  selectFrom = input.required<DataSource<T>>();
+  @Input({required: true}) selectFrom!: DataSource<T>;
 
   // Narrow the type of the context using the generic type of the directive.
   static ngTemplateContextGuard<T>(dir: SelectDirective<T>, ctx: any): ctx is SelectTemplateContext<T> {
@@ -4424,10 +4416,10 @@ const userId: Signal<string> = getUserId();
 
 const userResource = resource({
   params: () => ({id: userId()}),
-  loader: ({params, abortSignal}): Promise<User> => {
+  loader: ({request, abortSignal}): Promise<User> => {
     // fetch cancels any outstanding HTTP requests when the given `AbortSignal`
     // indicates that the request has been aborted.
-    return fetch(`users/${params.id}`, {signal: abortSignal});
+    return fetch(`users/${request.id}`, {signal: abortSignal});
   },
 });
 ```
@@ -4475,10 +4467,7 @@ The `status` signal provides a specific `ResourceStatus` that describes the stat
 | `'local'`     | Locally set value | The resource's value has been set locally via `.set()` or `.update()`        |
 
 You can use this status information to conditionally display user interface elements, such loading indicators and error messages.
-
-## Reactive data fetching with `httpResource`
-
-[`httpResource`](/guide/http/http-resource) is a wrapper around `HttpClient` that gives you the request status and response as signals. It makes HTTP requests through the Angular HTTP stack, including interceptors.# Understanding dependency injection
+# Understanding dependency injection
 
 Dependency injection, or DI, is one of the fundamental concepts in Angular. DI is wired into the Angular framework and allows classes with Angular decorators, such as Components, Directives, Pipes, and Injectables, to configure dependencies that they need.
 
@@ -6718,234 +6707,18 @@ Each `HttpEvent` reported in the event stream has a `type` which distinguishes w
 
 ## Handling request failure
 
-There are three ways an HTTP request can fail:
+There are two ways an HTTP request can fail:
 
 * A network or connection error can prevent the request from reaching the backend server.
-* A request didn't respond in time when the timeout option was set.
 * The backend can receive the request but fail to process it, and return an error response.
 
-`HttpClient` captures all of the above kinds of errors in an `HttpErrorResponse` which it returns through the `Observable`'s error channel. Network and timeout errors have a `status` code of `0` and an `error` which is an instance of [`ProgressEvent`](https://developer.mozilla.org/docs/Web/API/ProgressEvent). Backend errors have the failing `status` code returned by the backend, and the error response as the `error`. Inspect the response to identify the error's cause and the appropriate action to handle the error.
+`HttpClient` captures both kinds of errors in an `HttpErrorResponse` which it returns through the `Observable`'s error channel. Network errors have a `status` code of `0` and an `error` which is an instance of [`ProgressEvent`](https://developer.mozilla.org/docs/Web/API/ProgressEvent). Backend errors have the failing `status` code returned by the backend, and the error response as the `error`. Inspect the response to identify the error's cause and the appropriate action to handle the error.
 
 The [RxJS library](https://rxjs.dev/) offers several operators which can be useful for error handling.
 
 You can use the `catchError` operator to transform an error response into a value for the UI. This value can tell the UI to display an error page or value, and capture the error's cause if necessary.
 
 Sometimes transient errors such as network interruptions can cause a request to fail unexpectedly, and simply retrying the request will allow it to succeed. RxJS provides several *retry* operators which automatically re-subscribe to a failed `Observable` under certain conditions. For example, the `retry()` operator will automatically attempt to re-subscribe a specified number of times.
-
-### Timeouts
-
-To set a timeout for a request, you can set the `timeout` option to a number of milliseconds along other request options. If the backend request does not complete within the specified time, the request will be aborted and an error will be emitted.
-
-NOTE: The timeout will only apply to the backend HTTP request itself. It is not a timeout for the entire request handling chain. Therefore, this option is not affected by any delay introduced by interceptors.
-
-```ts
-http.get('/api/config', {
-  timeout: 3000,
-}).subscribe({
-  next: config => {
-    console.log('Config fetched successfully:', config);
-  },
-  error: err => {
-    // If the request times out, an error will have been emitted.
-  }
-});
-```
-## Advanced fetch options
-
-When using the `withFetch()` provider, Angular's `HttpClient` provides access to advanced fetch API options that can improve performance and user experience. These options are only available when using the fetch backend.
-
-### Fetch options
-
-The following options provide fine-grained control over request behavior when using the fetch backend.
-
-#### Keep-alive connections
-
-The `keepalive` option allows a request to outlive the page that initiated it. This is particularly useful for analytics or logging requests that need to complete even if the user navigates away from the page.
-
-```ts
-http.post('/api/analytics', analyticsData, {
-  keepalive: true
-}).subscribe();
-```
-#### HTTP caching control
-
-The `cache` option controls how the request interacts with the browser's HTTP cache, which can significantly improve performance for repeated requests.
-
-```ts
-//  Use cached response regardless of freshness
-http.get('/api/config', {
-  cache: 'force-cache'
-}).subscribe(config => {
-  // ...
-});
-
-// Always fetch from network, bypass cache
-http.get('/api/live-data', {
-  cache: 'no-cache'
-}).subscribe(data => {
-  // ...
-});
-
-// Use cached response only, fail if not in cache
-http.get('/api/static-data', {
-  cache: 'only-if-cached'
-}).subscribe(data => {
-  // ...
-});
-```
-#### Request priority for Core Web Vitals
-
-The `priority` option allows you to indicate the relative importance of a request, helping browsers optimize resource loading for better Core Web Vitals scores.
-
-```ts
-// High priority for critical resources
-http.get('/api/user-profile', {
-  priority: 'high'
-}).subscribe(profile => {
-  // ...
-});
-
-// Low priority for non-critical resources
-http.get('/api/recommendations', {
-  priority: 'low'
-}).subscribe(recommendations => {
-  // ...
-});
-
-// Auto priority (default) lets the browser decide
-http.get('/api/settings', {
-  priority: 'auto'
-}).subscribe(settings => {
-  // ...
-});
-```
-Available `priority` values:
-- `'high'`: High priority, loaded early (e.g., critical user data, above-the-fold content)
-- `'low'`: Low priority, loaded when resources are available (e.g., analytics, prefetch data)
-- `'auto'`: Browser determines priority based on request context (default)
-
-TIP: Use `priority: 'high'` for requests that affect Largest Contentful Paint (LCP) and `priority: 'low'` for requests that don't impact initial user experience.
-
-#### Request mode
-
-The `mode` option controls how the request handles cross-origin requests and determines the response type.
-
-```ts
-// Same-origin requests only
-http.get('/api/local-data', {
-  mode: 'same-origin'
-}).subscribe(data => {
-  // ...
-});
-
-// CORS-enabled cross-origin requests
-http.get('https://api.external.com/data', {
-  mode: 'cors'
-}).subscribe(data => {
-  // ...
-});
-
-// No-CORS mode for simple cross-origin requests
-http.get('https://external-api.com/public-data', {
-  mode: 'no-cors'
-}).subscribe(data => {
-  // ...
-});
-```
-Available `mode` values:
-- `'same-origin'`: Only allow same-origin requests, fail for cross-origin requests
-- `'cors'`: Allow cross-origin requests with CORS (default)
-- `'no-cors'`: Allow simple cross-origin requests without CORS, response is opaque
-
-TIP: Use `mode: 'same-origin'` for sensitive requests that should never go cross-origin.
-
-#### Redirect handling
-
-The `redirect` option specifies how to handle redirect responses from the server.
-
-```ts
-// Follow redirects automatically (default behavior)
-http.get('/api/resource', {
-  redirect: 'follow'
-}).subscribe(data => {
-  // ...
-});
-
-// Prevent automatic redirects
-http.get('/api/resource', {
-  redirect: 'manual'
-}).subscribe(response => {
-  // Handle redirect manually
-});
-
-// Treat redirects as errors
-http.get('/api/resource', {
-  redirect: 'error'
-}).subscribe({
-  next: data => {
-    // Success response
-  },
-  error: err => {
-    // Redirect responses will trigger this error handler
-  }
-});
-```
-Available `redirect` values:
-- `'follow'`: Automatically follow redirects (default)
-- `'error'`: Treat redirects as errors
-- `'manual'`: Don't follow redirects automatically, return redirect response
-
-TIP: Use `redirect: 'manual'` when you need to handle redirects with custom logic.
-
-#### Credentials handling
-
-The `credentials` option controls whether cookies, authorization headers, and other credentials are sent with cross-origin requests. This is particularly important for authentication scenarios.
-
-```ts
-// Include credentials for cross-origin requests
-http.get('https://api.example.com/protected-data', {
-  credentials: 'include'
-}).subscribe(data => {
-  // ...
-});
-
-// Never send credentials (default for cross-origin)
-http.get('https://api.example.com/public-data', {
-  credentials: 'omit'
-}).subscribe(data => {
-  // ...
-});
-
-// Send credentials only for same-origin requests
-http.get('/api/user-data', {
-  credentials: 'same-origin'
-}).subscribe(data => {
-  // ...
-});
-
-// withCredentials overrides credentials setting
-http.get('https://api.example.com/data', {
-  credentials: 'omit',        // This will be ignored
-  withCredentials: true       // This forces credentials: 'include'
-}).subscribe(data => {
-  // Request will include credentials despite credentials: 'omit'
-});
-
-// Legacy approach (still supported)
-http.get('https://api.example.com/data', {
-  withCredentials: true
-}).subscribe(data => {
-  // Equivalent to credentials: 'include'
-});
-```
-IMPORTANT: The `withCredentials` option takes precedence over the `credentials` option. If both are specified, `withCredentials: true` will always result in `credentials: 'include'`, regardless of the explicit `credentials` value.
-
-Available `credentials` values:
-- `'omit'`: Never send credentials
-- `'same-origin'`: Send credentials only for same-origin requests (default)
-- `'include'`: Always send credentials, even for cross-origin requests
-
-TIP: Use `credentials: 'include'` when you need to send authentication cookies or headers to a different domain that supports CORS. Avoid mixing `credentials` and `withCredentials` options to prevent confusion.
 
 ## Http `Observable`s
 
@@ -6997,9 +6770,7 @@ export class UserProfileComponent {
   private userService = inject(UserService);
 
   constructor(): void {
-    effect(() => {
-      this.user$ = this.userService.getUser(this.userId());
-    });
+    this.user$ = this.userService.getUser(this.userId());
   }
 }
 ```
@@ -9184,7 +8955,7 @@ export const ROUTES: Route[] = [
 ];
 ```
 
-In this code sample, the `admin` path contains a protected data property of `ADMIN_API_KEY` that is only available to children within its section. As a result, no other paths will be able to access the data provided via `ADMIN_API_KEY`.
+In this code sample, the `admin` path contains a protected data property of `ADMIN_API_KEY` that is only available to children within its section. As a result, no other paths will be able to access the data provided via `ADMIN_AP
 
 See the [Dependency injection guide](/guide/di) for more information about providers and injection in Angular.
 
@@ -9236,20 +9007,18 @@ You can add child routes to any route definition with the `children` property:
 
 ```typescript
 const routes: Routes = [
-  {
-    path: 'product/:id',
-    component: 'ProductComponent',
-    children: [
-      {
-        path: 'info',
-        component: ProductInfoComponent
-      },
-      {
-        path: 'reviews',
-        component: ProductReviewsComponent
-      }
-    ]
-  }
+  path: 'product/:id',
+  component: 'ProductComponent',
+  children: [
+    {
+      path: 'info',
+      component: ProductInfoComponent
+    },
+    {
+      path: 'reviews',
+      component: ProductReviewsComponent
+    }
+  ]
 ]
 ```
 
@@ -9319,17 +9088,17 @@ const routes: Routes = [
 When a user visits `/products`, Angular renders the following:
 
 ```html
-<app-header />
-<app-products />
-<app-footer />
+<app-header></app-header>
+<app-products></app-products>
+<app-footer></app-footer>
 ```
 
 If the user goes back to the home page, then Angular renders:
 
 ```html
-<app-header />
-<app-home />
-<app-footer />
+<app-header></app-header>
+<app-home></app-home>
+<app-footer></app-footer>
 ```
 
 When displaying a route, the `<router-outlet>` element remains present in the DOM as a reference point for future navigations. Angular inserts routed content just after the outlet element as a sibling.
@@ -9449,19 +9218,12 @@ The RouterLink directive is Angular's declarative approach to navigation. It all
 ## How to use RouterLink
 
 Instead of using regular anchor elements `<a>` with an `href` attribute, you add a RouterLink directive with the appropriate path in order to leverage Angular routing.
-```typescript
-import {RouterLink} from '@angular/router';
-@Component({
-  template: `
-    <nav>
-      <a routerLink="/user-profile">User profile</a>
-      <a routerLink="/settings">Settings</a>
-    </nav>
-  `
-  imports: [RouterLink],
-  ...
-})
-export class App {}
+
+```html
+<nav>
+  <a routerLink="/user-profile">User profile</a>
+  <a routerLink="/settings">Settings</a>
+</nav>
 ```
 
 ### Using absolute or relative links
@@ -9662,7 +9424,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
 @Component({ ... })
 export class UserProfileComponent {
   readonly userId: string;
-  private route = inject(ActivatedRoute);
+  private activatedRoute = inject(ActivatedRoute);
 
   constructor() {
     // Example URL: https://www.angular.dev/users/123?role=admin&status=active#contact
@@ -9914,7 +9676,7 @@ To edit an item, users click an Edit button, which opens an `EditGroceryItem` co
 You want that component to retrieve the `id` for the grocery item so it can display the right information to the user.
 
 Use a route to pass this type of information to your application components.
-To do so, you use the [`withComponentInputBinding`](api/router/withComponentInputBinding) feature with `provideRouter` or the `bindToComponentInputs` option of `RouterModule.forRoot`.
+To do so, you use the [withComponentInputBinding](api/router/withComponentInputBinding) feature with `provideRouter` or the `bindToComponentInputs` option of `RouterModule.forRoot`.
 
 To get information from a route:
 
@@ -9932,38 +9694,22 @@ providers: [
 
 </docs-step>
 
-<docs-step title="Add an `input` to the component">
+<docs-step title="Add an `Input` to the component">
 
 Update the component to have an `input()` property matching the name of the parameter.
 
 ```ts
 id = input.required<string>()
-hero = computed(() => this.service.getHero(id));
+hero = computed(() => this.service.getHero(heroId));
 ```
-
-</docs-step>
-<docs-step title="Optional: Use a default value">
-The router assigns values to all inputs based on the current route when `withComponentInputBinding` is enabled.
-The router assigns `undefined` if no route data matches the input key, such as when an optional query parameter is missing.
-You should include `undefined` in the `input`'s type when there's a possibility that an input might not be matched by the route.
-
-Provide a default value by either using the `transform` option on the input or managing a local state with a `linkedSignal`.
-
-```ts
-id = input.required({
-  transform: (maybeUndefined: string | undefined) => maybeUndefined ?? '0',
-});
-// or
-id = input<string|undefined>();
-internalId = linkedSignal(() => this.id() ?? getDefaultId());
-```
-
-</docs-step>
-</docs-workflow>
 
 NOTE: You can bind all route data with key, value pairs to component inputs: static or resolved route data, path parameters, matrix parameters, and query parameters.
 If you want to use the parent components route info you will need to set the router `paramsInheritanceStrategy` option:
 `withRouterConfig({paramsInheritanceStrategy: 'always'})`
+
+</docs-step>
+
+</docs-workflow>
 
 ## Displaying a 404 page
 
@@ -9979,6 +9725,41 @@ const routes: Routes = [
 
 The last route with the `path` of `**` is a wildcard route.
 The router selects this route if the requested URL doesn't match any of the paths earlier in the list and sends the user to the `PageNotFoundComponent`.
+
+## Preventing unauthorized access with route guards
+
+Use route guards to prevent users from navigating to parts of an application without authorization.
+The following route guards are available in Angular:
+To use route guards, consider using [component-less routes](api/router/Route#componentless-routes) as this facilitates guarding child routes.
+
+Create a file for your guard:
+
+```bash
+ng generate guard your-guard
+```
+
+In your guard file, add the guard functions you want to use.
+The following example uses `canActivateFn` to guard the route.
+
+```ts
+export const yourGuardFunction: CanActivateFn = (
+  next: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+) => {
+  // your  logic goes here
+}
+```
+
+In your routing module, use the appropriate property in your `routes` configuration.
+Here, `canActivate` tells the router to mediate navigation to this particular route.
+
+```ts
+{
+  path: '/your-path',
+  component: YourComponent,
+  canActivate: [yourGuardFunction],
+}
+```
 
 ## Link parameters array
 
@@ -11025,7 +10806,7 @@ Application stability is an important part of the hydration process. Hydration a
 
 ## I18N
 
-HELPFUL: By default, Angular will skip hydration for components that use i18n blocks, effectively re-rendering those components from scratch.
+HELPFUL: Support for internationalization with hydration is currently in [developer preview](/reference/releases#developer-preview). By default, Angular will skip hydration for components that use i18n blocks, effectively re-rendering those components from scratch.
 
 To enable hydration for i18n blocks, you can add [`withI18nSupport`](/api/platform-browser/withI18nSupport) to your `provideClientHydration` call.
 

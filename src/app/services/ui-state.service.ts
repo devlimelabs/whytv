@@ -6,7 +6,7 @@ interface UIState {
 }
 
 const initialState: UIState = {
-  carouselVisible: false
+  carouselVisible: true  // Default to visible on load
 };
 
 @Injectable({
