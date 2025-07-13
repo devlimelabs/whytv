@@ -111,6 +111,14 @@ export class VideoPlayerService {
   }
 
   /**
+   * Update playing state - called by WhytvPlayerComponent in response to YouTube player events
+   * This is a special method for the WhytvPlayerComponent which has direct access to YouTube Player API
+   */
+  updatePlayingState(playing: boolean, paused: boolean) {
+    patchState(this.#videoPlayerStore, { playing, paused });
+  }
+
+  /**
    * Toggle the liked state of the current video
    */
   toggleLiked() {

@@ -1,18 +1,14 @@
 /**
  * WhytvPlayerComponent - YouTube Player Integration
  * 
- * IMPORTANT: This component is an EXCEPTION to the no-direct-state-updates rule.
- * 
  * This component serves as the single source of truth for video player state and
- * is authorized to update state directly using patchState because:
- * 1. It's the only component that interacts with the YouTube Player API
- * 2. It needs to sync player events with application state in real-time
- * 3. It acts as the bridge between YouTube's event-driven API and our signal-based state
+ * acts as the bridge between YouTube's event-driven API and our signal-based state.
+ * It's the only component that interacts with the YouTube Player API.
  * 
  * Pattern used here:
  * - RxJS Observables: For event streams from VideoPlayerService (play$, pause$, volume$)
  * - Signals: For reactive state management (playing, paused, muted states)
- * - Direct patchState: Only in response to YouTube player events (onStateChange)
+ * - Service methods: Uses special VideoPlayerService methods to update state in response to YouTube player events
  * 
  * All other components should interact with the player through VideoPlayerService,
  * never through direct state updates.
@@ -32,7 +28,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { YouTubePlayer, YouTubePlayerModule } from '@angular/youtube-player';
-import { patchState } from '@ngrx/signals';
 
 import { ChannelService } from '../../../../services/channel/channel.service';
 import { VideoPlayerService } from '../../../../services/video-player.service';
@@ -151,20 +146,16 @@ export class WhytvPlayerComponent implements AfterViewInit {
       case YT.PlayerState.PLAYING:
         this.startProgressTimer();
 
-        patchState(this.videoPlayerState, {
-          playing: true,
-          paused: false
-        });
+        // Use service method to update state
+        this.videoPlayerSvc.updatePlayingState(true, false);
 
         break;
 
       case YT.PlayerState.PAUSED:
         this.stopProgressTimer();
 
-        patchState(this.videoPlayerState, {
-          playing: false,
-          paused: true
-        });
+        // Use service method to update state
+        this.videoPlayerSvc.updatePlayingState(false, true);
 
         break;
 
