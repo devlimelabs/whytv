@@ -3,7 +3,7 @@
   bottom: var(--bottom-position, 100px); /* Dynamic position based on carousel visibility */
   left: 0;
   right: 0;
-  z-index: 50; /* Above the video player but below carousel */
+  z-index: 100; /* Above carousel (z-90) but below side actions (z-110) */
   display: block;
   pointer-events: none; /* Allow clicks to pass through except on controls */
   transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth transition */

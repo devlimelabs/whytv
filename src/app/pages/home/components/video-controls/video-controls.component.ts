@@ -11,17 +11,17 @@ import {
   Play,
   Settings,
   Volume2,
-  VolumeX
+  VolumeX,
 } from 'lucide-angular';
 import { ButtonModule } from 'primeng/button';
-import { SliderModule } from 'primeng/slider';
 import { SelectModule } from 'primeng/select';
+import { SliderModule } from 'primeng/slider';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { videoPlayerState } from '../../../../states/video-player.state';
-import { ChannelsState } from '../../../../states/channels.state';
-import { VideoPlayerService } from '../../../../services/video-player.service';
 import { UIStateService } from '../../../../services/ui-state.service';
+import { VideoPlayerService } from '../../../../services/video-player.service';
+import { ChannelsState } from '../../../../states/channels.state';
+import { videoPlayerState } from '../../../../states/video-player.state';
 
 @Component({
   selector: 'app-video-controls',
@@ -61,15 +61,15 @@ export class VideoControlsComponent {
   paused = this.playerState.paused;
   muted = this.playerState.muted;
   currentVideo = computed(() => this.channelsState.currentVideo());
-  
+
   // Dynamic positioning based on carousel visibility
-  bottomPosition = computed(() => 
-    this.uiState.carouselVisible() ? '100px' : '0px'
+  bottomPosition = computed(() =>
+    this.uiState.carouselVisible() ? '160px' : '0px'
   );
-  
+
   // Mobile bottom position (smaller offset when carousel is visible)
-  mobileBottomPosition = computed(() => 
-    this.uiState.carouselVisible() ? '80px' : '0px'
+  mobileBottomPosition = computed(() =>
+    this.uiState.carouselVisible() ? '140px' : '0px'
   );
 
   // Local state for controls
@@ -81,6 +81,7 @@ export class VideoControlsComponent {
   showSpeedMenu = signal(false);
   isFullscreen = signal(false);
   progressSliderValue = signal(0);
+  handleFullscreenChange: () => void = () => {};
 
   // Available playback speeds
   speedOptions = [
@@ -122,17 +123,19 @@ export class VideoControlsComponent {
         this.buffered.set(buffered);
       });
 
+  }
+
+  ngOnInit() {
     // Check fullscreen state
-    const handleFullscreenChange = () => {
+    this.handleFullscreenChange = () => {
       this.isFullscreen.set(!!document.fullscreenElement);
     };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    
-    // Clean up listener
-    this.destroyRef.onDestroy(() => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    });
+
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
+  }
+
+  ngOnDestroy() {
+    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
   }
 
   handlePlayPause() {
@@ -180,11 +183,11 @@ export class VideoControlsComponent {
 
   private formatTime(seconds: number): string {
     if (!seconds || seconds < 0) return '0:00';
-    
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    
+
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
