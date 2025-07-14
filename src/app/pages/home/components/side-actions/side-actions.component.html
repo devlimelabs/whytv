@@ -8,10 +8,10 @@
     'translate-x-20': initialAnimation(),
     'translate-x-0':
       !initialAnimation() &&
-      !uiState.carouselVisible() &&
+      !uiState.channelRailVisible() &&
       !playerState.hideUIOverlays(),
     'translate-x-[-280px]':
-      uiState.carouselVisible() && !playerState.hideUIOverlays(),
+      uiState.channelRailVisible() && !playerState.hideUIOverlays(),
     'translate-x-hidden': playerState.hideUIOverlays(),
     'opacity-0': !state().isUserActive || isFullscreenInactive(),
     'opacity-100': state().isUserActive && !isFullscreenInactive()

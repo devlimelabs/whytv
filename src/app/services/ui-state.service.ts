@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 
 interface UIState {
-  carouselVisible: boolean;
+  carouselVisible: boolean;  // For future video list feature
+  channelRailVisible: boolean;  // For channel carousel at bottom
 }
 
 const initialState: UIState = {
-  carouselVisible: false  // Default to hidden on load
+  carouselVisible: false,  // Default to hidden on load
+  channelRailVisible: false  // Default to hidden on load
 };
 
 @Injectable({
@@ -24,6 +26,18 @@ export class UIStateService extends signalStore(
     setCarouselVisible(visible: boolean) {
       patchState(store, {
         carouselVisible: visible
+      });
+    },
+
+    toggleChannelRail() {
+      patchState(store, {
+        channelRailVisible: !store.channelRailVisible()
+      });
+    },
+
+    setChannelRailVisible(visible: boolean) {
+      patchState(store, {
+        channelRailVisible: visible
       });
     }
   }))

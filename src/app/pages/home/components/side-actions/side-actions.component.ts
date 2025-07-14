@@ -16,6 +16,7 @@ import {
   VolumeX,
   X,
 } from 'lucide-angular';
+import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
 import { ChannelService } from '../../../../services/channel/channel.service';
@@ -32,6 +33,7 @@ import { videoPlayerState } from '../../../../states/video-player.state';
     LucideAngularModule,
     ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './side-actions.component.html',
   styleUrl: './side-actions.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +50,7 @@ export class SideActionsComponent implements OnInit {
   readonly userActivityState = inject(UserActivityState);
   readonly uiState = inject(UIStateService);
   readonly destroyRef = inject(DestroyRef);
+  readonly messageService = inject(MessageService);
 
   // State
   readonly playerState = inject(videoPlayerState);
@@ -139,7 +142,13 @@ export class SideActionsComponent implements OnInit {
   handleToggleCarousel(event: MouseEvent) {
     event.preventDefault();
     this.markUserActive();
-    this.uiState.toggleCarousel();
+    // Show coming soon message for video list feature
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Coming Soon',
+      detail: 'Video list feature is coming soon!',
+      life: 3000
+    });
   }
 
   handleCreateChannel(event: MouseEvent) {
@@ -155,8 +164,8 @@ export class SideActionsComponent implements OnInit {
   handleToggleChannelRail(event: MouseEvent) {
     event.preventDefault();
     this.markUserActive();
-    // TODO: Implement channel rail toggle functionality
-    // This should be managed through a proper service or state management
+    // Toggle the channel rail (bottom carousel)
+    this.uiState.toggleChannelRail();
   }
 
   // Check if we're in fullscreen and user is inactive

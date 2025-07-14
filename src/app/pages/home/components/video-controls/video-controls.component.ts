@@ -62,14 +62,14 @@ export class VideoControlsComponent {
   muted = this.playerState.muted;
   currentVideo = computed(() => this.channelsState.currentVideo());
 
-  // Dynamic positioning based on carousel visibility
+  // Dynamic positioning based on channel rail visibility
   bottomPosition = computed(() =>
-    this.uiState.carouselVisible() ? '160px' : '0px'
+    this.uiState.channelRailVisible() ? '200px' : '0px'
   );
 
-  // Mobile bottom position (smaller offset when carousel is visible)
+  // Mobile bottom position (smaller offset when channel rail is visible)
   mobileBottomPosition = computed(() =>
-    this.uiState.carouselVisible() ? '140px' : '0px'
+    this.uiState.channelRailVisible() ? '180px' : '0px'
   );
 
   // Local state for controls
