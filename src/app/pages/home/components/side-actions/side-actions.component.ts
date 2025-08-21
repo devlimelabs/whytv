@@ -56,14 +56,7 @@ export class SideActionsComponent implements OnInit {
   // State
   readonly playerState = inject(videoPlayerState);
 
-  // Dynamic positioning to move with video controls
-  // Video controls move up 200px when channel rail is visible
-  // Side actions sit 80px above the video controls
-  bottomPosition = computed(() => {
-    const videoControlsOffset = this.uiState.channelRailVisible() ? 200 : 0;
-    const sideActionsOffset = 80; // Height above video controls
-    return videoControlsOffset + sideActionsOffset;
-  });
+  // Side actions now use fixed positioning to prevent carousel interference
 
   // Local component state
   state = signalState({

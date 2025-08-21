@@ -1,0 +1,3 @@
+[submodule "CODING_STANDARDS"]
+	path = CODING_STANDARDS
+	url = git@github.com:JrPribs/ANGULAR_CODING_STANDARDS.git

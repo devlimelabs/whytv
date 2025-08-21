@@ -1,8 +1,7 @@
 
 <!-- Side actions container with activity visibility -->
 <div
-  class="absolute z-110 right-4 flex flex-col gap-6 transition-all duration-300"
-  [style.bottom.px]="bottomPosition()"
+  class="absolute z-110 right-4 bottom-32 flex flex-col gap-6 transition-all duration-300"
   [ngClass]="{
     'translate-x-20': initialAnimation(),
     'translate-x-0': !initialAnimation() && !playerState.hideUIOverlays(),
@@ -10,7 +9,7 @@
     'opacity-0': !state().isUserActive || isFullscreenInactive(),
     'opacity-100': state().isUserActive && !isFullscreenInactive()
   }"
-  style="transition: opacity 0.5s ease-in-out, bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+  style="transition: opacity 0.5s ease-in-out"
 >
   <!-- Button to toggle video rail - positioned at the top of controls for better UX -->
   <button
@@ -117,7 +116,7 @@
 
 <!-- Create Channel Button - Now at the bottom with inverted styles -->
 <div
-  class="absolute z-20 right-4 bottom-4 md:bottom-24 transition-all duration-300"
+  class="absolute z-[115] right-4 bottom-4 md:bottom-24 transition-all duration-300"
   [ngClass]="{
     'translate-y-10': playerState.hideUIOverlays(),
     'translate-y-0': !playerState.hideUIOverlays(),

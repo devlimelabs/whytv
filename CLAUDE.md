@@ -16,6 +16,20 @@ WhyTV is a web application that provides a TV-like experience for watching YouTu
   - `cd functions && npm run serve` - Start Firebase emulators
   - `cd functions && npm run lint` - Lint Firebase functions
 
+## Angular Coding Standards
+
+This project follows the Angular coding standards located in the CODING_STANDARDS directory. 
+Please ensure all code adheres to these standards:
+
+- Review CODING_STANDARDS/angular-cheat-sheet.md for quick reference of law codes
+- Follow patterns in CODING_STANDARDS/angular_coding_standards.md
+- Use state management patterns from CODING_STANDARDS/angular-state-architecture.md
+
+IMPORTANT: Treat these standards as linting rules. Before writing or modifying any Angular code:
+1. Check the relevant law codes in the cheat sheet
+2. Ensure your implementation follows the prescribed patterns
+3. Document any necessary deviations in project-overrides.md
+
 ## Documentation Guide
 
 - **Coding Standards**: See [CODING_STANDARDS](./CODING_STANDARDS/) directory for universal Angular/TypeScript standards
