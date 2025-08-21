@@ -1,22 +1,16 @@
-<!-- Toast for notifications -->
-<p-toast></p-toast>
 
 <!-- Side actions container with activity visibility -->
 <div
-  class="absolute z-20 right-4 bottom-20 md:bottom-40 flex flex-col gap-6 transition-all duration-300"
+  class="absolute z-110 right-4 flex flex-col gap-6 transition-all duration-300"
+  [style.bottom.px]="bottomPosition()"
   [ngClass]="{
     'translate-x-20': initialAnimation(),
-    'translate-x-0':
-      !initialAnimation() &&
-      !uiState.channelRailVisible() &&
-      !playerState.hideUIOverlays(),
-    'translate-x-[-280px]':
-      uiState.channelRailVisible() && !playerState.hideUIOverlays(),
+    'translate-x-0': !initialAnimation() && !playerState.hideUIOverlays(),
     'translate-x-hidden': playerState.hideUIOverlays(),
     'opacity-0': !state().isUserActive || isFullscreenInactive(),
     'opacity-100': state().isUserActive && !isFullscreenInactive()
   }"
-  style="transition: opacity 0.5s ease-in-out"
+  style="transition: opacity 0.5s ease-in-out, bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
 >
   <!-- Button to toggle video rail - positioned at the top of controls for better UX -->
   <button

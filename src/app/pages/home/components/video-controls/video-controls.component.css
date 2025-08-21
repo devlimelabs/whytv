@@ -1,275 +1,273 @@
-:host {
+app-video-controls {
   position: absolute;
-  bottom: var(--bottom-position, 100px); /* Dynamic position based on carousel visibility */
+  bottom: var(--bottom-position, 20px); /* Dynamic position based on carousel visibility */
   left: 0;
   right: 0;
   z-index: 100; /* Above carousel (z-90) but below side actions (z-110) */
   display: block;
   pointer-events: none; /* Allow clicks to pass through except on controls */
-  transition: bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth transition */
-}
-
-.video-controls {
-  pointer-events: auto; /* Re-enable pointer events on actual controls */
-  padding: 0 20px 20px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  transition: opacity 0.3s ease;
-}
-
-/* Progress Bar Container */
-.progress-container {
-  position: relative;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.progress-buffered {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  transition: width 0.1s ease;
-}
-
-.progress-played {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: #ff0000; /* YouTube red */
-  border-radius: 3px;
-  transition: width 0.1s ease;
-}
-
-.progress-slider {
-  position: absolute;
-  top: -4px;
-  left: 0;
-  width: 100%;
-  height: 14px;
-  opacity: 0;
-  cursor: pointer;
-}
-
-/* Controls Bar */
-.controls-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  color: white;
-  margin-right: 60px; /* Space for side actions without affecting button click areas */
-}
-
-.controls-left,
-.controls-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.controls-center {
-  flex: 1;
-  text-align: center;
-  overflow: hidden;
-}
-
-/* Control Buttons */
-.control-button {
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.control-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Volume Controls */
-.volume-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  padding: 8px;
-  min-width: 120px; /* Ensure consistent space */
-}
-
-.volume-slider-container {
-  width: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: width 0.3s ease, opacity 0.3s ease;
-}
-
-/* Simple hover logic - show slider on hover */
-.volume-controls:hover .volume-slider-container {
-  width: 80px;
-  opacity: 1;
-}
-
-.volume-slider {
-  width: 80px;
-  height: 20px; /* Bigger click area */
-}
-
-/* Time Display */
-.time-display {
-  font-size: 14px;
-  font-family: monospace;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  user-select: none;
-}
-
-.time-separator {
-  opacity: 0.7;
-}
-
-/* Video Title */
-.video-title {
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 400px;
-  display: inline-block;
-}
-
-/* Speed Control */
-.speed-control {
-  position: relative;
-}
-
-.speed-label {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.speed-menu {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background: rgba(0, 0, 0, 0.9);
-  border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 100px;
-}
-
-.speed-option {
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  text-align: left;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.speed-option:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.speed-option.active {
-  background: rgba(255, 0, 0, 0.5);
-}
-
-/* Custom PrimeNG Slider Styles */
-:host ::ng-deep .custom-slider {
-  background: transparent;
-  border: none;
-}
-
-:host ::ng-deep .custom-slider .p-slider-range {
-  background: transparent;
-}
-
-:host ::ng-deep .custom-slider .p-slider-handle {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #ff0000;
-  border: 2px solid white;
-  margin-top: -5px;
-  margin-left: -7px;
-  transition: transform 0.2s ease;
-}
-
-:host ::ng-deep .custom-slider:hover .p-slider-handle {
-  transform: scale(1.2);
-}
-
-:host ::ng-deep .volume-custom-slider {
-  background: rgba(255, 255, 255, 0.3);
-  height: 4px;
-}
-
-:host ::ng-deep .volume-custom-slider .p-slider-range {
-  background: white;
-}
-
-:host ::ng-deep .volume-custom-slider .p-slider-handle {
-  width: 12px;
-  height: 12px;
-  background: white;
-  border: none;
-  margin-top: -4px;
-  margin-left: -6px;
-}
-
-/* Hide controls when user is inactive */
-:host-context(.user-inactive) .video-controls {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  :host {
-    /* Mobile uses dynamic positioning with reduced offset when carousel is visible */
-    bottom: var(--mobile-bottom-position, 80px);
-  }
+  transition: bottom 0.5s ease-out; /* Match carousel transition timing */
 
   .video-controls {
-    padding: 0 10px 10px;
+    pointer-events: auto; /* Re-enable pointer events on actual controls */
+    padding: 0 20px 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    transition: opacity 0.3s ease;
   }
 
+  /* Progress Bar Container */
+  .progress-container {
+    position: relative;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .progress-buffered {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    transition: width 0.1s ease;
+  }
+
+  .progress-played {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #ff0000; /* YouTube red */
+    border-radius: 3px;
+    transition: width 0.1s ease;
+  }
+
+  .progress-slider {
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 100%;
+    height: 14px;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* Controls Bar */
   .controls-bar {
-    gap: 10px;
-    margin-right: 50px; /* Reduced margin for mobile */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    color: white;
+    margin-right: 60px; /* Space for side actions without affecting button click areas */
   }
 
   .controls-left,
   .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .controls-center {
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* Control Buttons */
+  .control-button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .control-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Volume Controls */
+  .volume-controls {
+    display: flex;
+    align-items: center;
     gap: 8px;
+    position: relative;
+    padding: 8px;
+    min-width: 120px; /* Ensure consistent space */
   }
 
-  .video-title {
-    display: none; /* Hide title on mobile to save space */
+  .volume-slider-container {
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: width 0.3s ease, opacity 0.3s ease;
   }
 
+  /* Simple hover logic - show slider on hover */
   .volume-controls:hover .volume-slider-container {
-    width: 0; /* Don't show volume slider on mobile */
+    width: 80px;
+    opacity: 1;
+  }
+
+  .volume-slider {
+    width: 80px;
+    height: 20px; /* Bigger click area */
+  }
+
+  /* Time Display */
+  .time-display {
+    font-size: 14px;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+  }
+
+  .time-separator {
+    opacity: 0.7;
+  }
+
+  /* Video Title */
+  .video-title {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+    display: inline-block;
+  }
+
+  /* Speed Control */
+  .speed-control {
+    position: relative;
+  }
+
+  .speed-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .speed-menu {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 100px;
+  }
+
+  .speed-option {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: left;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .speed-option:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .speed-option.active {
+    background: rgba(255, 0, 0, 0.5);
+  }
+
+  /* Custom PrimeNG Slider Styles */
+  .custom-slider {
+    background: transparent;
+    border: none;
+  }
+
+  .custom-slider .p-slider-range {
+    background: transparent;
+  }
+
+  .custom-slider .p-slider-handle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ff0000;
+    border: 2px solid white;
+    margin-top: -5px;
+    margin-left: -7px;
+    transition: transform 0.2s ease;
+  }
+
+  .custom-slider:hover .p-slider-handle {
+    transform: scale(1.2);
+  }
+
+  .volume-custom-slider {
+    background: rgba(255, 255, 255, 0.3);
+    height: 4px;
+  }
+
+  .volume-custom-slider .p-slider-range {
+    background: white;
+  }
+
+  .volume-custom-slider .p-slider-handle {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: none;
+    margin-top: -4px;
+    margin-left: -6px;
+  }
+
+  /* Hide controls when user is inactive */
+  &.user-inactive .video-controls {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    /* Mobile uses dynamic positioning with reduced offset when carousel is visible */
+    bottom: var(--mobile-bottom-position, 20px);
+
+    .video-controls {
+      padding: 0 10px 10px;
+    }
+
+    .controls-bar {
+      gap: 10px;
+      margin-right: 50px; /* Reduced margin for mobile */
+    }
+
+    .controls-left,
+    .controls-right {
+      gap: 8px;
+    }
+
+    .video-title {
+      display: none; /* Hide title on mobile to save space */
+    }
+
+    .volume-controls:hover .volume-slider-container {
+      width: 0; /* Don't show volume slider on mobile */
+    }
   }
 }

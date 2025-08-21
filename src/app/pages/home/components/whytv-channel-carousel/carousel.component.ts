@@ -14,6 +14,7 @@ import {
   signal,
   viewChild,
   viewChildren,
+  ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -45,7 +46,8 @@ import { Channel } from '../../../../states/video-player.state';
   animations: [
     showHideVertical()
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class WhyTvChannelCarouselComponent implements AfterViewInit, OnInit {
   private renderer = inject(Renderer2);

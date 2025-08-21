@@ -1,15 +1,15 @@
 /**
  * WhytvPlayerComponent - YouTube Player Integration
- * 
+ *
  * This component serves as the single source of truth for video player state and
  * acts as the bridge between YouTube's event-driven API and our signal-based state.
  * It's the only component that interacts with the YouTube Player API.
- * 
+ *
  * Pattern used here:
  * - RxJS Observables: For event streams from VideoPlayerService (play$, pause$, volume$)
  * - Signals: For reactive state management (playing, paused, muted states)
  * - Service methods: Uses special VideoPlayerService methods to update state in response to YouTube player events
- * 
+ *
  * All other components should interact with the player through VideoPlayerService,
  * never through direct state updates.
  */
@@ -45,7 +45,7 @@ import { VideoControlsComponent } from '../video-controls/video-controls.compone
   templateUrl: './whytv-player.component.html',
   styleUrl: './whytv-player.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
+  encapsulation: ViewEncapsulation.None
 })
 export class WhytvPlayerComponent implements AfterViewInit {
   readonly videoPlayerState = inject(videoPlayerState);
@@ -128,7 +128,7 @@ export class WhytvPlayerComponent implements AfterViewInit {
         this.youtubePlayer()?.seekTo(time, true);
       });
   }
-  
+
   ngAfterViewInit() {
     // Initial setup
 
@@ -230,7 +230,7 @@ export class WhytvPlayerComponent implements AfterViewInit {
 
   startProgressTimer() {
     this.stopProgressTimer(); // Clear any existing timer
-    
+
     // Update time every 250ms for smooth progress
     this.progressTimer = setInterval(() => {
       this.emitTimeUpdate();
@@ -249,7 +249,7 @@ export class WhytvPlayerComponent implements AfterViewInit {
     if (player) {
       const currentTime = player.getCurrentTime();
       const duration = player.getDuration();
-      
+
       // Only emit if time has changed significantly (avoid flooding)
       if (Math.abs(currentTime - this.lastEmittedTime) >= 0.1 || currentTime === 0) {
         this.lastEmittedTime = currentTime;

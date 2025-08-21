@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewEncapsulation } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -37,7 +37,8 @@ import { videoPlayerState } from '../../../../states/video-player.state';
   ],
   templateUrl: './video-controls.component.html',
   styleUrl: './video-controls.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class VideoControlsComponent {
   private videoPlayerService = inject(VideoPlayerService);
@@ -63,13 +64,14 @@ export class VideoControlsComponent {
   currentVideo = computed(() => this.channelsState.currentVideo());
 
   // Dynamic positioning based on channel rail visibility
+  // When channel rail is visible, move controls up to sit on top of it
   bottomPosition = computed(() =>
-    this.uiState.channelRailVisible() ? '200px' : '0px'
+    this.uiState.channelRailVisible() ? '200px' : '20px'
   );
 
   // Mobile bottom position (smaller offset when channel rail is visible)
   mobileBottomPosition = computed(() =>
-    this.uiState.channelRailVisible() ? '180px' : '0px'
+    this.uiState.channelRailVisible() ? '180px' : '20px'
   );
 
   // Local state for controls

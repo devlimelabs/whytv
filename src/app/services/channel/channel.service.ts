@@ -20,13 +20,15 @@ export class ChannelService implements OnDestroy {
   private firestoreService = inject(FirestoreService);
   private dialogService = inject(DialogService);
   #channelSet = new Subject<Channel>();
+  #channelCreationStarted = new Subject<{ id: string; description: string }>();
 
   // Track active subscriptions
   private destroy$ = new Subject<void>();
-  private activeSubscription: (() => void) | null = null;
+  private activeSubscriptions: Map<string, () => void> = new Map();
   private dialogRef: DynamicDialogRef | null = null;
 
   readonly channelSet$ = this.#channelSet.asObservable();
+  readonly channelCreationStarted$ = this.#channelCreationStarted.asObservable();
 
   /**
    * Open the create channel dialog
@@ -73,9 +75,11 @@ export class ChannelService implements OnDestroy {
     // Validate description
     if (!channelDescription || channelDescription.trim().length === 0) {
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Invalid Input',
-        detail: 'Please provide a channel description.'
+        detail: 'Please provide a channel description.',
+        life: 5000
       });
       return;
     }
@@ -83,9 +87,11 @@ export class ChannelService implements OnDestroy {
     // Ensure description has enough content for AI to work with
     if (channelDescription.trim().length < 10) {
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Description Too Short',
-        detail: 'Please provide a more detailed description (at least 10 characters).'
+        detail: 'Please provide a more detailed description (at least 10 characters).',
+        life: 5000
       });
       return;
     }
@@ -111,21 +117,32 @@ export class ChannelService implements OnDestroy {
       const docRef = await addDoc(channelsRef, channel);
       const channelId = docRef.id;
 
+      // Show initial toast notification
       this.messageSvc.add({
+        key: 'global',
         severity: 'success',
-        summary: 'Channel Processing',
-        detail: 'Channel created successfully! Starting processing...'
+        summary: 'Creating Channel',
+        detail: 'Channel creation started. This may take a few minutes...',
+        life: 3000
+      });
+
+      // Notify channel creation tracker to start tracking this channel
+      this.#channelCreationStarted.next({
+        id: channelId,
+        description: channelDescription.trim()
       });
 
       // Set up a subscription to listen for channel status changes
-      // this.subscribeToChannelStatus(channelId);
+      this.subscribeToChannelStatus(channelId);
 
     } catch (error) {
       console.error('Error creating channel:', error);
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Channel Creation Failed',
-        detail: 'Failed to create channel. Please try again.'
+        detail: 'Failed to create channel. Please try again.',
+        life: 5000
       });
     }
   }
@@ -146,11 +163,16 @@ export class ChannelService implements OnDestroy {
         this.channelsStore.setChannels([]);
       }
 
-      this.messageSvc.add({
-        severity: 'success',
-        summary: 'Channels Loaded',
-        detail: 'Channels loaded successfully!'
-      });
+      // Only show success message if channels were actually loaded
+      if (channels.length > 0) {
+        this.messageSvc.add({
+          key: 'global',
+          severity: 'success',
+          summary: 'Channels Loaded',
+          detail: `${channels.length} channel${channels.length > 1 ? 's' : ''} loaded successfully!`,
+          life: 3000
+        });
+      }
     } catch (error) {
       console.error('Error loading channels:', error);
       this.channelsStore.setLoading(false, 'Failed to load channels');
@@ -180,9 +202,11 @@ export class ChannelService implements OnDestroy {
     } catch (error) {
       console.error('Error loading new channel:', error);
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Channel Loading Failed',
-        detail: 'Failed to load channel. Please try again.'
+        detail: 'Failed to load channel. Please try again.',
+        life: 5000
       });
     }
   }
@@ -203,6 +227,7 @@ export class ChannelService implements OnDestroy {
     this.channelsStore.nextVideo();
 
     this.messageSvc.add({
+      key: 'global',
       severity: 'info',
       summary: 'Next Video',
       life: 2000
@@ -217,6 +242,7 @@ export class ChannelService implements OnDestroy {
     this.channelsStore.previousVideo();
 
     this.messageSvc.add({
+      key: 'global',
       severity: 'info',
       summary: 'Previous Video',
       life: 2000
@@ -224,12 +250,29 @@ export class ChannelService implements OnDestroy {
   }
 
   /**
+   * Subscribe to status updates for a specific channel
+   * @param channelId The ID of the channel to track
+   */
+  private subscribeToChannelStatus(channelId: string): void {
+    // Clean up any existing subscription for this channel
+    const existingUnsubscribe = this.activeSubscriptions.get(channelId);
+    if (existingUnsubscribe) {
+      existingUnsubscribe();
+    }
+
+    // Set up new subscription
+    const unsubscribe = this.firestoreService.subscribeToChannel(channelId);
+    this.activeSubscriptions.set(channelId, unsubscribe);
+  }
+
+  /**
    * Clean up subscriptions on service destroy
    */
   ngOnDestroy(): void {
-    if (this.activeSubscription) {
-      this.activeSubscription();
-    }
+    // Clean up all active subscriptions
+    this.activeSubscriptions.forEach(unsubscribe => unsubscribe());
+    this.activeSubscriptions.clear();
+    
     if (this.dialogRef) {
       this.dialogRef.close();
     }

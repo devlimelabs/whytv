@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { patchState, signalState } from '@ngrx/signals';
 import {
@@ -37,6 +37,7 @@ import { videoPlayerState } from '../../../../states/video-player.state';
   templateUrl: './side-actions.component.html',
   styleUrl: './side-actions.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   standalone: true
 })
 export class SideActionsComponent implements OnInit {
@@ -54,6 +55,15 @@ export class SideActionsComponent implements OnInit {
 
   // State
   readonly playerState = inject(videoPlayerState);
+
+  // Dynamic positioning to move with video controls
+  // Video controls move up 200px when channel rail is visible
+  // Side actions sit 80px above the video controls
+  bottomPosition = computed(() => {
+    const videoControlsOffset = this.uiState.channelRailVisible() ? 200 : 0;
+    const sideActionsOffset = 80; // Height above video controls
+    return videoControlsOffset + sideActionsOffset;
+  });
 
   // Local component state
   state = signalState({

@@ -24,6 +24,13 @@ WhyTV is a web application that provides a TV-like experience for watching YouTu
 - **Library References**: See [docs directory](./docs/) for external library documentation
 - **Project Overrides**: [Project-specific deviations](./CODING_STANDARDS/project-overrides.md) from standards
 
+## CSS Architecture Guidelines
+
+- **View Encapsulation**: Always use `ViewEncapsulation.None` to avoid ng-deep anti-pattern
+- **Component Styles**: Wrap all styles in component's selector (e.g., `app-my-component { }`)
+- **PrimeNG Overrides**: Use nested selectors within component wrapper
+- **Never Use**: Avoid `:host` and `::ng-deep` selectors
+
 ## Current State & Known Issues
 
 ### Missing/Incomplete Features

@@ -3,12 +3,22 @@
 >
   <div id="main-container" class="absolute inset-0 w-full h-full">
     <app-whytv-player></app-whytv-player>
+    <app-side-actions></app-side-actions>
   </div>
 
-  @if (uiState.channelRailVisible()) {
+  <!-- Hover zone for auto-showing channel carousel (bottom third of screen) -->
+  <div 
+    class="absolute bottom-0 left-0 w-full h-[33vh] z-[85] pointer-events-auto"
+    (mouseenter)="handleHoverZoneEnter()"
+    (mouseleave)="handleHoverZoneLeave($event)"
+  ></div>
+
+  <!-- Channel carousel with smooth slide animation like macOS dock -->
   <whytv-channel-carousel
-    class="absolute bottom-0 left-[100px] z-[90] w-[calc(100vw-200px)]"
+    class="absolute bottom-0 left-[100px] z-[90] w-[calc(100vw-200px)] transition-transform duration-500 ease-out"
+    [class.translate-y-0]="uiState.channelRailVisible()"
+    [class.translate-y-full]="!uiState.channelRailVisible()"
+    (mouseenter)="handleCarouselMouseEnter()"
+    (mouseleave)="handleCarouselMouseLeave()"
   />
-  }
-  <app-side-actions></app-side-actions>
 </div>

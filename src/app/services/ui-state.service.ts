@@ -39,6 +39,18 @@ export class UIStateService extends signalStore(
       patchState(store, {
         channelRailVisible: visible
       });
+    },
+
+    showChannelRail() {
+      patchState(store, {
+        channelRailVisible: true
+      });
+    },
+
+    hideChannelRail() {
+      patchState(store, {
+        channelRailVisible: false
+      });
     }
   }))
 ) {}

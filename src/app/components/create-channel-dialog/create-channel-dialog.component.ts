@@ -99,18 +99,22 @@ export class CreateChannelDialogComponent implements OnInit {
     // Validate description
     if (!description || description.trim().length === 0) {
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Invalid Input',
-        detail: 'Please provide a channel description.'
+        detail: 'Please provide a channel description.',
+        life: 5000
       });
       return;
     }
 
     if (description.trim().length < 10) {
       this.messageSvc.add({
+        key: 'global',
         severity: 'error',
         summary: 'Description Too Short',
-        detail: 'Please provide a more detailed description (at least 10 characters).'
+        detail: 'Please provide a more detailed description (at least 10 characters).',
+        life: 5000
       });
       return;
     }

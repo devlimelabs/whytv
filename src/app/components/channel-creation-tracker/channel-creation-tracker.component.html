@@ -1,0 +1,66 @@
+<!-- Channel Creation Progress Tracker -->
+@if (state().isVisible) {
+<div class="app-channel-creation-tracker">
+  <div class="fixed bottom-4 left-4 z-50 max-w-sm space-y-2">
+    <!-- Header with dismiss all button -->
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-medium text-white">Creating Channels</h3>
+      <button
+        type="button"
+        class="text-xs text-gray-400 hover:text-white transition-colors"
+        (click)="dismissAll()"
+        title="Dismiss All"
+      >
+        Dismiss All
+      </button>
+    </div>
+
+    <!-- Channel progress cards -->
+    @for (channel of state().activeChannels; track channel.id) {
+    <p-card class="channel-progress-card">
+      <div class="flex items-start gap-3">
+        <!-- Status icon with spinner for active states -->
+        <div class="flex-shrink-0 mt-1">
+          @if (channel.status !== 'live') {
+          <p-progressSpinner
+            [style]="{ width: '20px', height: '20px' }"
+            strokeWidth="3"
+            animationDuration="1s"
+          ></p-progressSpinner>
+          } @else {
+          <span class="text-lg">{{ getStatusIcon(channel.status) }}</span>
+          }
+        </div>
+
+        <!-- Channel info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-medium text-white truncate">
+              {{ channel.channelName }}
+            </h4>
+            <button
+              type="button"
+              class="text-xs text-gray-400 hover:text-white transition-colors ml-2"
+              (click)="dismissChannel(channel.id)"
+              title="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+          
+          <p class="text-xs text-gray-300 mt-1">
+            {{ getStatusMessage(channel.status) }}
+          </p>
+          
+          @if (channel.description && channel.channelName === 'Creating channel...') {
+          <p class="text-xs text-gray-400 mt-1 truncate" [title]="channel.description">
+            {{ channel.description }}
+          </p>
+          }
+        </div>
+      </div>
+    </p-card>
+    }
+  </div>
+</div>
+}

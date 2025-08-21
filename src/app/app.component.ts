@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 
 import { UserActivityService } from './services/user-activity.service';
+import { ChannelCreationTrackerComponent } from './components/channel-creation-tracker/channel-creation-tracker.component';
 
 // Channel Picker removed in favor of side-actions button
 @Component({
@@ -27,7 +28,8 @@ import { UserActivityService } from './services/user-activity.service';
     DynamicDialogModule,
     ButtonModule,
     FormsModule,
-    SelectModule
+    SelectModule,
+    ChannelCreationTrackerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [MessageService]
